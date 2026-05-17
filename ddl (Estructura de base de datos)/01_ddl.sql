@@ -1,0 +1,207 @@
+-- =====================================================
+-- ELIMINACIÓN DE TABLAS
+-- =====================================================
+--he colocado esto al inicio, para eliminar versiones
+--residuales de las tablas, cuando reciban los insert.sql, 
+--deberán ejecutarlo tras ejecutar esto, o adjuntarlo en el
+--mismo Script, [pueden desechar este comentario]
+
+DROP TABLE telefono CASCADE CONSTRAINTS;
+DROP TABLE asignacion CASCADE CONSTRAINTS;
+DROP TABLE tarea CASCADE CONSTRAINTS;
+DROP TABLE documento CASCADE CONSTRAINTS;
+DROP TABLE riesgo CASCADE CONSTRAINTS;
+DROP TABLE hito CASCADE CONSTRAINTS;
+DROP TABLE empleado CASCADE CONSTRAINTS;
+DROP TABLE proyecto CASCADE CONSTRAINTS;
+DROP TABLE categoria CASCADE CONSTRAINTS;
+
+-- =====================================================
+-- TABLA: CATEGORIA
+-- =====================================================
+
+CREATE TABLE categoria (
+    id_categoria NUMBER
+        CONSTRAINT pk_categoria PRIMARY KEY,
+
+    nombre_categoria VARCHAR2(100)
+        CONSTRAINT nn_categoria_nombre NOT NULL,
+
+    descripcion_categoria VARCHAR2(300)
+);
+
+-- =====================================================
+-- TABLA: PROYECTO
+-- =====================================================
+
+CREATE TABLE proyecto (
+    id_proyecto NUMBER
+        CONSTRAINT pk_proyecto PRIMARY KEY,
+
+    nombre_proyecto VARCHAR2(150)
+        CONSTRAINT nn_proyecto_nombre NOT NULL,
+
+    id_categoria NUMBER
+        CONSTRAINT nn_proyecto_categoria NOT NULL,
+
+    CONSTRAINT fk_proyecto_categoria
+        FOREIGN KEY (id_categoria)
+        REFERENCES categoria(id_categoria)
+);
+
+-- =====================================================
+-- TABLA: EMPLEADO
+-- =====================================================
+
+CREATE TABLE empleado (
+    id_empleado NUMBER
+        CONSTRAINT pk_empleado PRIMARY KEY,
+
+    nombre_empleado VARCHAR2(150)
+        CONSTRAINT nn_empleado_nombre NOT NULL,
+
+    correo VARCHAR2(150)
+        CONSTRAINT uq_empleado_correo UNIQUE
+);
+
+-- =====================================================
+-- TABLA: TELEFONO
+-- =====================================================
+
+CREATE TABLE telefono (
+    id_empleado NUMBER
+        CONSTRAINT nn_telefono_empleado NOT NULL,
+
+    telefono VARCHAR2(20)
+        CONSTRAINT nn_telefono NOT NULL,
+
+    CONSTRAINT pk_telefono
+        PRIMARY KEY (id_empleado, telefono),
+
+    CONSTRAINT fk_telefono_empleado
+        FOREIGN KEY (id_empleado)
+        REFERENCES empleado(id_empleado)
+        ON DELETE CASCADE
+);
+
+-- =====================================================
+-- TABLA: TAREA
+-- =====================================================
+
+CREATE TABLE tarea (
+    id_tarea NUMBER
+        CONSTRAINT pk_tarea PRIMARY KEY,
+
+    id_proyecto NUMBER
+        CONSTRAINT nn_tarea_proyecto NOT NULL,
+
+    titulo_tarea VARCHAR2(150)
+        CONSTRAINT nn_titulo_tarea NOT NULL,
+
+    estado_tarea VARCHAR2(30)
+        CONSTRAINT nn_estado_tarea NOT NULL,
+
+    CONSTRAINT fk_tarea_proyecto
+        FOREIGN KEY (id_proyecto)
+        REFERENCES proyecto(id_proyecto)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_estado_tarea
+        CHECK (
+            estado_tarea IN (
+                'POR INICIAR',
+                'EN DESARROLLO',
+                'FINALIZADO',
+                'EN PAUSA'
+            )
+        )
+);
+
+-- =====================================================
+-- TABLA: ASIGNACION
+-- =====================================================
+
+CREATE TABLE asignacion (
+    id_tarea NUMBER
+        CONSTRAINT nn_asignacion_tarea NOT NULL,
+
+    id_empleado NUMBER
+        CONSTRAINT nn_asignacion_empleado NOT NULL,
+
+    horas NUMBER(6,2)
+        CONSTRAINT chk_horas CHECK (horas >= 0),
+
+    CONSTRAINT pk_asignacion
+        PRIMARY KEY (id_tarea, id_empleado),
+
+    CONSTRAINT fk_asignacion_tarea
+        FOREIGN KEY (id_tarea)
+        REFERENCES tarea(id_tarea)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_asignacion_empleado
+        FOREIGN KEY (id_empleado)
+        REFERENCES empleado(id_empleado)
+        ON DELETE CASCADE
+);
+
+-- =====================================================
+-- TABLA: DOCUMENTO
+-- =====================================================
+
+CREATE TABLE documento (
+    id_documento NUMBER
+        CONSTRAINT pk_documento PRIMARY KEY,
+
+    id_proyecto NUMBER
+        CONSTRAINT nn_documento_proyecto NOT NULL,
+
+    nombre_documento VARCHAR2(150)
+        CONSTRAINT nn_documento_nombre NOT NULL,
+
+    CONSTRAINT fk_documento_proyecto
+        FOREIGN KEY (id_proyecto)
+        REFERENCES proyecto(id_proyecto)
+        ON DELETE CASCADE
+);
+
+-- =====================================================
+-- TABLA: RIESGO
+-- =====================================================
+
+CREATE TABLE riesgo (
+    id_riesgo NUMBER
+        CONSTRAINT pk_riesgo PRIMARY KEY,
+
+    id_proyecto NUMBER
+        CONSTRAINT nn_riesgo_proyecto NOT NULL,
+
+    descripcion_riesgo VARCHAR2(300)
+        CONSTRAINT nn_descripcion_riesgo NOT NULL,
+
+    CONSTRAINT fk_riesgo_proyecto
+        FOREIGN KEY (id_proyecto)
+        REFERENCES proyecto(id_proyecto)
+        ON DELETE CASCADE
+);
+
+-- =====================================================
+-- TABLA: HITO
+-- =====================================================
+
+CREATE TABLE hito (
+    id_hito NUMBER
+        CONSTRAINT pk_hito PRIMARY KEY,
+
+    id_proyecto NUMBER
+        CONSTRAINT nn_hito_proyecto NOT NULL,
+
+    nombre_hito VARCHAR2(150)
+        CONSTRAINT nn_nombre_hito NOT NULL,
+
+    CONSTRAINT fk_hito_proyecto
+        FOREIGN KEY (id_proyecto)
+        REFERENCES proyecto(id_proyecto)
+        ON DELETE CASCADE
+);
+
