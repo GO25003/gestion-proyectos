@@ -43,10 +43,15 @@ CREATE TABLE proyecto (
 
     id_categoria NUMBER
         CONSTRAINT nn_proyecto_categoria NOT NULL,
+    
+    fecha_inicio DATE,
+    
+    fecha_fin DATE,
 
     CONSTRAINT fk_proyecto_categoria
         FOREIGN KEY (id_categoria)
         REFERENCES categoria(id_categoria)
+        
 );
 
 -- =====================================================
@@ -100,6 +105,10 @@ CREATE TABLE tarea (
 
     estado_tarea VARCHAR2(30)
         CONSTRAINT nn_estado_tarea NOT NULL,
+        
+    fecha_creacion DATE,
+    
+    fecha_entrega DATE,
 
     CONSTRAINT fk_tarea_proyecto
         FOREIGN KEY (id_proyecto)
@@ -198,7 +207,9 @@ CREATE TABLE hito (
 
     nombre_hito VARCHAR2(150)
         CONSTRAINT nn_nombre_hito NOT NULL,
-
+        
+    fecha_hito DATE,
+    
     CONSTRAINT fk_hito_proyecto
         FOREIGN KEY (id_proyecto)
         REFERENCES proyecto(id_proyecto)
