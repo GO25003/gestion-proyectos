@@ -1,7 +1,5 @@
-<<<<<<< Updated upstream
 # gestion-proyectos
 Proyecto universitario de base de datos en oracle
-=======
 # Gestion de Proyectos - Oracle DB
 
 Repositorio de base de datos para un sistema de gestion de proyectos. El proyecto
@@ -134,4 +132,3 @@ seguridad para Oracle:
 ## Ultima actualizacion
 
 2026-05-28
->>>>>>> Stashed changes
