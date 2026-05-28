@@ -1,50 +1,134 @@
----
-tipo: Manifiesto de Configuración y Meta-Plantilla de Resumen Ejecutivo
-proyecto: Gestión de Proyectos (DBP135)
-estado: En Desarrollo
-progreso: 35%
-última_actualización: 2026-05-17
-tags: [ues, base-de-datos, oracle, sql, arquitectura-relacional]
----
+# gestion-proyectos
+Proyecto universitario de base de datos en oracle
+# Gestion de Proyectos - Oracle DB
 
-# 🚀 Gestión de Proyectos (Oracle DB)
+Repositorio de base de datos para un sistema de gestion de proyectos. El proyecto
+modela categorias, proyectos, empleados, tareas, asignaciones, documentos, riesgos
+e hitos, incorporando reglas de integridad, procedimientos PL/SQL, auditoria,
+registro de errores y configuracion basica de seguridad.
 
-### 🛡️ Stack Tecnológico y Lenguajes
-![Oracle](https://img.shields.io/badge/Oracle-%23F00000.svg?style=for-the-badge&logo=oracle&logoColor=white) ![SQL](https://img.shields.io/badge/SQL-%23003B57.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![Obsidian](https://img.shields.io/badge/Obsidian-%23483699.svg?style=for-the-badge&logo=obsidian&logoColor=white)
+## Estado del proyecto
 
----
+**Avance general estimado: 78%**
 
-> [!IMPORTANT]
-> **ESTADO DE INFRAESTRUCTURA Y DISEÑO:**
-> Este documento representa la bitácora técnica oficial del diseño relacional para el sistema de "Gestión de Proyectos" de la cátedra DBP135 (UES). Gestionado como un Git-Submodule en el entorno `Digital_Brain` (`02_UES/Gestión_de_Proyectos`). El diseño se enfoca en la integridad referencial fuerte, control preventivo a nivel de base de datos y la 3ra Forma Normal (3NF).
+El porcentaje se calcula a partir de los artefactos disponibles en el repositorio:
+estructura relacional, reglas de negocio, procedimientos, triggers y seguridad.
+Quedan pendientes los scripts de datos de prueba, vistas analiticas y validacion
+integral en una instancia Oracle.
 
-## 🏛️ 1. Detalle del Stack y Lenguajes Utilizados
-Análisis profundo del criterio de selección y rol de la tecnología en esta capa del sistema:
+| Modulo | Estado | Avance |
+| --- | --- | ---: |
+| Modelo relacional y DDL | Implementado | 95% |
+| Restricciones e integridad referencial | Implementado | 90% |
+| Procedimientos almacenados | Implementado | 85% |
+| Triggers, auditoria y logs | Implementado | 80% |
+| Seguridad, usuarios y permisos | Implementado base | 75% |
+| Datos de prueba DML | Pendiente | 0% |
+| Vistas/reporteria | Pendiente | 0% |
+| Pruebas de ejecucion integrales | Pendiente parcial | 35% |
 
-* **Oracle Database (Motor Relacional):** Seleccionado como el *Single Source of Truth* del sistema. Su rol es garantizar el cumplimiento ACID absoluto en las transacciones de asignación de horas y la estructura de hitos del proyecto.
-* **SQL (DDL Estricto):** Lenguaje utilizado para definir la estructura, enfocándose en un uso agresivo de `CHECK constraints` y relaciones `ON DELETE CASCADE` para evitar que la lógica de validación dependa exclusivamente de un futuro backend.
+## Tecnologias en uso
 
-## 🎯 2. Estado Actual del Sistema y Mapeo Modular
-Desglose del progreso del desarrollo estructurado en los artefactos de la base de datos:
+![Oracle](https://img.shields.io/badge/Oracle-Database-F80000?style=for-the-badge&logo=oracle&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-DDL%20%7C%20DML-336791?style=for-the-badge)
+![PLSQL](https://img.shields.io/badge/PL%2FSQL-Procedures%20%26%20Triggers-2F4F4F?style=for-the-badge)
+![Git](https://img.shields.io/badge/Git-Version%20Control-F05032?style=for-the-badge&logo=git&logoColor=white)
 
-* **`01_ddl.sql` (Estructura Core):** [Estable] Mapeo completo de las 9 entidades principales (`categoria`, `proyecto`, `empleado`, `telefono`, `tarea`, `asignacion`, `documento`, `riesgo`, `hito`).
-* **Reglas de Negocio (Constraints):** [Implementadas] Prevención de horas negativas en `asignacion`, estados predefinidos estrictos para `tarea` y control de emails únicos para `empleado`.
-* **Datos de Prueba (DML) y Vistas:** [Pendiente] Falta estructurar los scripts de inicialización de datos sintéticos y las vistas analíticas para la reportería (ej. sumatoria de horas por proyecto).
+- **Oracle Database:** motor relacional principal del proyecto.
+- **SQL DDL:** definicion de tablas, llaves primarias, llaves foraneas y restricciones.
+- **PL/SQL:** procedimientos almacenados, manejo de excepciones, triggers y auditoria.
+- **Oracle Security:** usuarios, cuotas y privilegios por perfil.
+- **Git:** control de versiones del repositorio.
 
-> [!TIP]
-> **Nota de Diseño:** Al delegar reglas críticas directamente al motor de la base de datos (vía constraints), el sistema se blinda contra inserciones defectuosas sin importar si el día de mañana se conecta a este esquema una API en Rust, Go, o simplemente se manipula desde la consola SQL.
+## Estructura del repositorio
 
-## 📊 3. Interoperabilidad y Flujo de Procesamiento
-Explicación detallada de cómo se comporta el dato en el diseño actual.
+```text
+gestion-proyectos/
+|-- ddl (Estructura de base de datos)/
+|   |-- 01_ddl.sql
+|   `-- 01_1alter_table.sql
+|-- procedimientos/
+|   `-- 07_procedimientos.sql
+|-- triggers/
+|   `-- 08_triggers.sql
+|-- seguridad (roles y permisos)/
+|   `-- 09_seguridad.sql
+|-- dml (inserts)/
+|-- vistas/
+`-- README.md
+```
 
-| Entidad / Módulo Interno | Rol Funcional | Restricción Crítica | Impacto de Integridad |
-| :--- | :--- | :--- | :--- |
-| `proyecto` & Anexos | Contenedor principal | `ON DELETE CASCADE` | Elimina hitos, tareas y riesgos si el proyecto se borra. Evita datos huérfanos. |
-| `tarea` | Seguimiento de trabajo | `CHECK (estado_tarea IN (...))` | Bloquea estados irreales, forzando una máquina de estados finita. |
-| `asignacion` | Control de esfuerzo (NxM) | `CHECK (horas >= 0)` | Impide lógicamente el registro de tiempos invertidos. |
+## Componentes implementados
 
-## 🛡️ 4. Seguridad Perimetral e Infraestructura Lógica
-Mecanismos activos implementados para garantizar la calidad y consistencia de la información a nivel de almacenamiento:
-* **Integridad Referencial Fuerte:** Uso de restricciones bidireccionales en tablas pivote (`asignacion`) que destruyen el registro si la tarea o el empleado asociado dejan de existir.
-* **Prevención de Duplicidad:** Claves primarias compuestas en entidades multivalor (ej. `telefono`) para asegurar que el mismo recurso no posea registros fantasma.
-* **Aislamiento Semántico:** Modelado que separa explícitamente los *riesgos* y los *documentos* de la estructura del proyecto principal, permitiendo escalabilidad futura (como migrar documentos a un bucket S3 conservando solo la URL/referencia en la base de datos).
+### Modelo relacional
+
+El archivo `ddl (Estructura de base de datos)/01_ddl.sql` define las entidades
+principales del sistema:
+
+- `categoria`
+- `proyecto`
+- `empleado`
+- `telefono`
+- `tarea`
+- `asignacion`
+- `documento`
+- `riesgo`
+- `hito`
+
+Incluye restricciones `PRIMARY KEY`, `FOREIGN KEY`, `UNIQUE`, `NOT NULL`,
+`CHECK` y reglas `ON DELETE CASCADE` para evitar registros huerfanos.
+
+### Procedimientos almacenados
+
+El archivo `procedimientos/07_procedimientos.sql` contiene procedimientos PL/SQL
+orientados a analisis y control operativo:
+
+- `sp_resumen_periodo`: genera un resumen gerencial por rango de fechas.
+- `sp_top_elementos`: muestra rankings de empleados, proyectos y categorias.
+- `sp_indicadores_categoria`: calcula indicadores por categoria con comparativo.
+- `sp_alertas_negocio`: genera alertas operativas de tareas, proyectos e hitos.
+
+### Triggers y auditoria
+
+El archivo `triggers/08_triggers.sql` implementa:
+
+- Tabla y secuencia para auditoria de proyectos.
+- Tabla y secuencia para registro de errores.
+- Tabla y secuencia para auditoria del log de errores.
+- Trigger de auditoria sobre `log_errores`.
+- Trigger de auditoria sobre `proyecto`.
+- Trigger de integridad para limitar horas activas por empleado.
+
+### Seguridad
+
+El archivo `seguridad (roles y permisos)/09_seguridad.sql` define una base de
+seguridad para Oracle:
+
+- Usuario de solo lectura: `c##usr_lectura`.
+- Usuario administrador de procedimientos y logs: `c##usr_admin`.
+- Privilegios `CREATE SESSION`, `SELECT`, `EXECUTE` y permisos DML controlados
+  sobre logs.
+
+## Orden sugerido de ejecucion
+
+1. Ejecutar `ddl (Estructura de base de datos)/01_ddl.sql`.
+2. Ejecutar `triggers/08_triggers.sql`.
+3. Ejecutar `procedimientos/07_procedimientos.sql`.
+4. Ejecutar `seguridad (roles y permisos)/09_seguridad.sql` desde un usuario con
+   privilegios suficientes.
+5. Agregar y ejecutar scripts DML cuando esten disponibles.
+6. Agregar y ejecutar vistas/reportes cuando esten disponibles.
+
+## Pendientes
+
+- Crear scripts de insercion en `dml (inserts)/`.
+- Crear vistas analiticas en `vistas/`.
+- Validar el orden de ejecucion completo en Oracle SQL Developer o SQL*Plus.
+- Agregar consultas de prueba para procedimientos y triggers.
+- Documentar capturas o evidencias de ejecucion.
+- Revisar credenciales hardcodeadas antes de usar el proyecto fuera de un entorno
+  academico o local.
+
+## Ultima actualizacion
+
+2026-05-28
