@@ -5,7 +5,7 @@ Proyecto universitario de base de datos en oracle
 Repositorio de base de datos para un sistema de gestion de proyectos. El proyecto
 modela categorias, proyectos, empleados, tareas, asignaciones, documentos, riesgos
 e hitos, incorporando reglas de integridad, procedimientos PL/SQL, auditoria,
-registro de errores y configuracion basica de seguridad.
+registro de errores y configuracion basica de seguridad para DB.
 
 ## Estado del proyecto
 
