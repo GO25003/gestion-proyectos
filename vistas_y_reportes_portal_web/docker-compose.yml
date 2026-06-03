@@ -1,0 +1,39 @@
+#version: '3.8'
+
+services:
+  backend-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proyectos_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    # Cargar las variables de entorno de forma segura
+    env_file:
+      - .env
+    # Límites de seguridad para el contenedor
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 64M
+    networks:
+      - red-proyectos
+
+  # El servicio de Oracle de tus compañeros (Como referencia de conexión)
+  oracle-db:
+    image: gvenzl/oracle-xe:latest # O la imagen que defina el Integrante 1
+    container_name: oracle_database
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PASSWORD=MiClaveSegura123
+    networks:
+      - red-proyectos
+
+networks:
+  red-proyectos:
+    driver: bridge
