@@ -1,10 +1,6 @@
 -- =====================================================
--- ELIMINACIÓN DE TABLAS
--- =====================================================
---he colocado esto al inicio, para eliminar versiones
---residuales de las tablas, cuando reciban los insert.sql, 
---deberán ejecutarlo tras ejecutar esto, o adjuntarlo en el
---mismo Script, [pueden desechar este comentario]
+--BQ24002Uber de Jesús Barillas Quijada 
+
 
 DROP TABLE telefono CASCADE CONSTRAINTS;
 DROP TABLE asignacion CASCADE CONSTRAINTS;
