@@ -160,7 +160,7 @@ BEGIN
       INTO v_horas_actuales
       FROM asignacion a
       JOIN tarea      t ON t.id_tarea = a.id_tarea
-     WHERE a.id_empleado  = :NEW.id_empleado
+    WHERE a.id_empleado  = :NEW.id_empleado
        AND t.estado_tarea <> 'FINALIZADO'
        AND a.id_tarea     <> :NEW.id_tarea;  -- excluir la fila que se está modificando
  
@@ -169,9 +169,10 @@ BEGIN
  
     IF v_horas_total > v_limite THEN
         -- Obtener nombre para el mensaje
-        SELECT nombre_empleado INTO v_nombre_empleado
-          FROM empleado WHERE id_empleado = :NEW.id_empleado;
- 
+        SELECT nombre || ' ' || apellido
+          INTO v_nombre_empleado
+          FROM empleado
+        WHERE id_empleado = :NEW.id_empleado;
         -- Registrar el intento en log_errores
         INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
         VALUES (
