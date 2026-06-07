@@ -43,7 +43,7 @@ CHECK (
 
 ALTER TABLE empleado
 ADD CONSTRAINT chk_empleado_nombre_trim
-CHECK (TRIM(nombre) IS NOT NULL);
+CHECK (TRIM(nombre) IS NOT NULL),
 ADD CONSTRAINT chk_empleado_apellido_trim
 CHECK (TRIM(apellido) IS NOT NULL);
 
