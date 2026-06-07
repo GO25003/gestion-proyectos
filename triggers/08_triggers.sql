@@ -145,62 +145,84 @@ END trg_auditoria_proyecto;
 -- RAISE_APPLICATION_ERROR y registra el intento en LOG_ERRORES.
 -- =====================================================================
  
-CREATE OR REPLACE TRIGGER trg_integridad_horas_empleado
-    BEFORE INSERT OR UPDATE OF horas ON asignacion
-    FOR EACH ROW
+create or replace TRIGGER trg_integridad_horas_empleado
+BEFORE INSERT OR UPDATE OF horas ON asignacion
+FOR EACH ROW
 DECLARE
-    v_horas_actuales  NUMBER;
-    v_horas_nuevas    NUMBER;
-    v_horas_total     NUMBER;
-    v_nombre_empleado VARCHAR2(150);
-    v_limite          CONSTANT NUMBER := 40;
+    v_horas_existentes NUMBER;
+    v_horas_total      NUMBER;
+    v_nombre_empleado  VARCHAR2(200);
+    v_estado_tarea     VARCHAR2(30);
+    v_limite           CONSTANT NUMBER := 40;
+    v_mensaje          VARCHAR2(4000);
+
+    -- 1. FUNCIÓN AUTÓNOMA: Lee las otras tareas del empleado sin causar tabla mutante
+    FUNCTION fn_get_horas_otras_tareas(p_empleado NUMBER, p_tarea NUMBER) RETURN NUMBER IS
+        PRAGMA AUTONOMOUS_TRANSACTION;
+        v_suma NUMBER;
+    BEGIN
+        SELECT NVL(SUM(a.horas), 0)
+          INTO v_suma
+          FROM asignacion a
+          JOIN tarea t ON t.id_tarea = a.id_tarea
+         WHERE a.id_empleado = p_empleado
+           AND t.estado_tarea <> 'FINALIZADO'
+           AND a.id_tarea <> p_tarea; -- Excluye la tarea actual (clave para UPDATE)
+        COMMIT;
+        RETURN v_suma;
+    END fn_get_horas_otras_tareas;
+
+    -- 2. PROCEDIMIENTO AUTÓNOMO: Guarda el log permanentemente (no le afecta el rollback)
+    PROCEDURE pr_guardar_log(p_msg VARCHAR2, p_params VARCHAR2) IS
+        PRAGMA AUTONOMOUS_TRANSACTION;
+    BEGIN
+        INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, fecha_error, parametros)
+        VALUES (seq_log_errores.NEXTVAL, 'TRG_INTEGRIDAD_HORAS_EMPLEADO', p_msg, USER, SYSDATE, p_params);
+        COMMIT;
+    END pr_guardar_log;
+
 BEGIN
-    -- Horas ya asignadas al empleado en tareas activas (excluye la fila actual en UPDATE)
-    SELECT NVL(SUM(a.horas), 0)
-      INTO v_horas_actuales
-      FROM asignacion a
-      JOIN tarea      t ON t.id_tarea = a.id_tarea
-    WHERE a.id_empleado  = :NEW.id_empleado
-       AND t.estado_tarea <> 'FINALIZADO'
-       AND a.id_tarea     <> :NEW.id_tarea;  -- excluir la fila que se está modificando
- 
-    v_horas_nuevas := NVL(:NEW.horas, 0);
-    v_horas_total  := v_horas_actuales + v_horas_nuevas;
- 
+    -- Averiguamos el estado de la tarea actual
+    SELECT estado_tarea 
+      INTO v_estado_tarea
+      FROM tarea 
+     WHERE id_tarea = :NEW.id_tarea;
+
+    -- Consultamos cuántas horas acumuladas tiene en las OTRAS tareas activas
+    v_horas_existentes := fn_get_horas_otras_tareas(:NEW.id_empleado, :NEW.id_tarea);
+
+    -- Si la tarea actual está activa, sumamos sus horas al conteo semanal
+    IF v_estado_tarea <> 'FINALIZADO' THEN
+        v_horas_total := v_horas_existentes + NVL(:NEW.horas, 0);
+    ELSE
+        v_horas_total := v_horas_existentes; -- Si está FINALIZADA, estas horas no aportan al límite
+    END IF;
+
+    -- REGLA DE NEGOCIO: Validar si excede las 40 horas
     IF v_horas_total > v_limite THEN
-        -- Obtener nombre para el mensaje
+
+        -- Jalamos el nombre del empleado para el reporte de error
         SELECT nombre || ' ' || apellido
           INTO v_nombre_empleado
           FROM empleado
-        WHERE id_empleado = :NEW.id_empleado;
-        -- Registrar el intento en log_errores
-        INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
-        VALUES (
-            seq_log_errores.NEXTVAL,
-            'TRG_INTEGRIDAD_HORAS_EMPLEADO',
-            'Asignación rechazada: el empleado ' || v_nombre_empleado
-                || ' superaría el límite de ' || v_limite || ' horas activas. '
-                || 'Horas actuales: ' || v_horas_actuales
-                || ', horas nuevas: ' || v_horas_nuevas
-                || ', total: ' || v_horas_total || '.',
-            USER,
-            'id_empleado=' || :NEW.id_empleado || ' id_tarea=' || :NEW.id_tarea
-        );
- 
-        RAISE_APPLICATION_ERROR(-20010,
-            'INTEGRIDAD: El empleado "' || v_nombre_empleado
-            || '" superaría el límite de ' || v_limite || ' horas activas ('
-            || v_horas_total || '/' || v_limite || '). Asignación rechazada.');
+         WHERE id_empleado = :NEW.id_empleado;
+
+        v_mensaje := 'Asignación rechazada: el empleado ' || v_nombre_empleado
+                  || ' superaría el límite de ' || v_limite || ' horas activas. '
+                  || 'Horas en otras tareas: ' || v_horas_existentes
+                  || ', horas de esta tarea: ' || :NEW.horas
+                  || ', total proyectado: ' || v_horas_total || '.';
+
+        -- Guardamos el intento fallido en el LOG_ERRORES
+        pr_guardar_log(v_mensaje, 'id_empleado=' || :NEW.id_empleado || ' id_tarea=' || :NEW.id_tarea);
+
+        -- Cancelamos la inserción/actualización con el código requerido
+        RAISE_APPLICATION_ERROR(-20010, 'INTEGRIDAD: ' || v_mensaje);
     END IF;
- 
+
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
-        -- El empleado no existe; la FK lo rechazará, solo logueamos
-        INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
-        VALUES (seq_log_errores.NEXTVAL, 'TRG_INTEGRIDAD_HORAS_EMPLEADO',
-                'NO_DATA_FOUND: empleado id=' || :NEW.id_empleado || ' no encontrado.', USER,
-                'id_empleado=' || :NEW.id_empleado);
-        RAISE_APPLICATION_ERROR(-20011,
-            'INTEGRIDAD: El empleado con id=' || :NEW.id_empleado || ' no existe.');
+        -- Evita que el trigger muera si se meten IDs inexistentes antes de que actúen las FK
+        NULL;
 END trg_integridad_horas_empleado;
 /
