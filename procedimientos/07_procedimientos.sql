@@ -85,7 +85,7 @@ BEGIN
     SELECT COUNT(*)
       INTO v_hitos_periodo
       FROM hito
-     WHERE fecha_hito BETWEEN p_fecha_inicio AND p_fecha_fin;
+     WHERE fecha_estimada BETWEEN p_fecha_inicio AND p_fecha_fin;
  
     SELECT COUNT(DISTINCT a.id_empleado)
       INTO v_total_empleados
@@ -206,12 +206,12 @@ CREATE OR REPLACE PROCEDURE sp_top_elementos (
 )
 AS
     CURSOR cur_top_empleados IS
-        SELECT e.nombre_empleado,
+        SELECT e.nombre || ' ' || e.apellido AS nombre_empleado,
                NVL(SUM(a.horas), 0)       AS total_horas,
                COUNT(DISTINCT a.id_tarea)  AS tareas_asignadas
           FROM empleado    e
           LEFT JOIN asignacion a ON a.id_empleado = e.id_empleado
-         GROUP BY e.id_empleado, e.nombre_empleado
+         GROUP BY e.id_empleado, e.nombre, e.apellido
          ORDER BY total_horas DESC
          FETCH FIRST p_n ROWS ONLY;
  
@@ -402,7 +402,7 @@ AS
             COUNT(CASE WHEN t.fecha_creacion BETWEEN p_fecha_inicio AND p_fecha_fin
                        AND t.estado_tarea = 'FINALIZADO'
                        THEN t.id_tarea END)                          AS fin_act,
-            COUNT(CASE WHEN h.fecha_hito BETWEEN p_fecha_inicio AND p_fecha_fin
+            COUNT(CASE WHEN h.fecha_estimada BETWEEN p_fecha_inicio AND p_fecha_fin
                        THEN h.id_hito END)                           AS hit_act,
             COUNT(CASE WHEN t.fecha_creacion BETWEEN v_ant_ini AND v_ant_fin
                        THEN t.id_tarea END)                          AS tar_ant,
@@ -411,7 +411,7 @@ AS
             COUNT(CASE WHEN t.fecha_creacion BETWEEN v_ant_ini AND v_ant_fin
                        AND t.estado_tarea = 'FINALIZADO'
                        THEN t.id_tarea END)                          AS fin_ant,
-            COUNT(CASE WHEN h.fecha_hito BETWEEN v_ant_ini AND v_ant_fin
+            COUNT(CASE WHEN h.fecha_estimada BETWEEN v_ant_ini AND v_ant_fin
                        THEN h.id_hito END)                           AS hit_ant
         FROM categoria   c
         LEFT JOIN proyecto   p ON p.id_categoria = c.id_categoria
@@ -666,12 +666,12 @@ AS
  
     CURSOR cur_a9 IS
         SELECT h.nombre_hito, p.nombre_proyecto,
-               TO_CHAR(h.fecha_hito,'DD/MM/YYYY') AS fecha_hito,
-               ROUND(h.fecha_hito - SYSDATE)       AS dias_rest
+               TO_CHAR(h.fecha_estimada,'DD/MM/YYYY') AS fecha_hito,
+               ROUND(h.fecha_estimada - SYSDATE)       AS dias_rest
           FROM hito     h
           JOIN proyecto p ON p.id_proyecto = h.id_proyecto
-         WHERE h.fecha_hito BETWEEN SYSDATE AND SYSDATE + p_dias_alerta
-         ORDER BY h.fecha_hito;
+         WHERE h.fecha_estimada BETWEEN SYSDATE AND SYSDATE + p_dias_alerta
+         ORDER BY h.fecha_estimada;
  
     e_umbral_invalido EXCEPTION;
     PRAGMA EXCEPTION_INIT(e_umbral_invalido, -20003);
@@ -789,7 +789,7 @@ BEGIN
     END IF;
  
     SELECT COUNT(*) INTO v_cnt FROM hito
-     WHERE fecha_hito BETWEEN SYSDATE AND SYSDATE + p_dias_alerta;
+     WHERE fecha_estimada BETWEEN SYSDATE AND SYSDATE + p_dias_alerta;
     DBMS_OUTPUT.PUT_LINE(' ');
     DBMS_OUTPUT.PUT_LINE('[A9] HITOS EN LOS PRÓXIMOS ' || p_dias_alerta || ' DÍAS: ' || v_cnt);
     IF v_cnt > 0 THEN
@@ -798,7 +798,7 @@ BEGIN
         FOR rec IN cur_a9 LOOP
             DBMS_OUTPUT.PUT_LINE('     '
                 || RPAD(rec.nombre_hito,    30) || RPAD(rec.nombre_proyecto,30)
-                || RPAD(rec.fecha_hito,     13) || rec.dias_rest);
+                || RPAD(rec.fecha_estimada, 13) || rec.dias_rest);
         END LOOP;
     END IF;
  
