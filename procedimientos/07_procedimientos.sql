@@ -201,7 +201,7 @@ END sp_resumen_periodo;
 
 SHOW ERRORS;
 
-CREATE OR REPLACE PROCEDURE sp_top_elementos (
+create or replace PROCEDURE sp_top_elementos (
     p_n IN NUMBER
 )
 AS
@@ -305,6 +305,18 @@ BEGIN
 EXCEPTION
     WHEN e_n_invalido THEN
         ROLLBACK;
+        DECLARE 
+            v_params  VARCHAR2(500);
+            v_usuario VARCHAR2(100);
+            v_error   VARCHAR2(4000);
+        BEGIN
+            v_usuario := USER;
+            v_error   := 'RAISE_APPLICATION_ERROR: sp_top_elementos: el parámetro N debe ser mayor que 0.';
+            v_params := 'N=' || TO_CHAR(p_n);
+            INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
+            VALUES (seq_log_errores.NEXTVAL, 'SP_TOP_ELEMENTOS', v_error, v_usuario, v_params);
+            COMMIT;
+        END;
         DBMS_OUTPUT.PUT_LINE(SQLERRM);
     WHEN NO_DATA_FOUND THEN
         ROLLBACK;
@@ -321,7 +333,7 @@ EXCEPTION
             COMMIT;
         END;
         DBMS_OUTPUT.PUT_LINE('[sp_top_elementos] Sin datos. Ver LOG_ERRORES.');
-        
+
     WHEN TOO_MANY_ROWS THEN
         ROLLBACK;
         DECLARE 
@@ -340,7 +352,7 @@ EXCEPTION
         RAISE;
 END sp_top_elementos;
 /
-
+--ULTIMA MODIFICACION SUBIR A GITHUB
 
 
 
