@@ -200,21 +200,21 @@ END sp_resumen_periodo;
 /
 
 SHOW ERRORS;
- 
+
 CREATE OR REPLACE PROCEDURE sp_top_elementos (
     p_n IN NUMBER
 )
 AS
     CURSOR cur_top_empleados IS
-        SELECT e.nombre || ' ' || e.apellido AS nombre_empleado,
+        SELECT e.nombre AS nombre_empleado, -- <--- Aquí tiene alias
                NVL(SUM(a.horas), 0)       AS total_horas,
                COUNT(DISTINCT a.id_tarea)  AS tareas_asignadas
-          FROM empleado    e
+          FROM empleado e
           LEFT JOIN asignacion a ON a.id_empleado = e.id_empleado
          GROUP BY e.id_empleado, e.nombre, e.apellido
          ORDER BY total_horas DESC
          FETCH FIRST p_n ROWS ONLY;
- 
+
     CURSOR cur_top_proyectos IS
         SELECT p.nombre_proyecto,
                c.nombre_categoria,
@@ -228,7 +228,7 @@ AS
          GROUP BY p.id_proyecto, p.nombre_proyecto, c.nombre_categoria
          ORDER BY total_tareas DESC
          FETCH FIRST p_n ROWS ONLY;
- 
+
     CURSOR cur_top_categorias IS
         SELECT c.nombre_categoria,
                COUNT(DISTINCT p.id_proyecto) AS total_proyectos,
@@ -241,17 +241,17 @@ AS
          GROUP BY c.id_categoria, c.nombre_categoria
          ORDER BY total_proyectos DESC
          FETCH FIRST p_n ROWS ONLY;
- 
+
     v_rank NUMBER := 0;
     v_pct  NUMBER;
- 
+
     e_n_invalido EXCEPTION;
     PRAGMA EXCEPTION_INIT(e_n_invalido, -20002);
 BEGIN
     IF p_n IS NULL OR p_n <= 0 THEN
         RAISE_APPLICATION_ERROR(-20002, 'sp_top_elementos: el parámetro N debe ser mayor que 0.');
     END IF;
- 
+
     -- Top N empleados
     DBMS_OUTPUT.PUT_LINE('============================================');
     DBMS_OUTPUT.PUT_LINE('  TOP ' || p_n || ' EMPLEADOS POR HORAS ASIGNADAS');
@@ -262,10 +262,10 @@ BEGIN
     FOR rec IN cur_top_empleados LOOP
         v_rank := v_rank + 1;
         DBMS_OUTPUT.PUT_LINE(
-            RPAD(v_rank,              4) || RPAD(rec.nombre_empleado,32) ||
+            RPAD(v_rank,              4) || RPAD(rec.nombre_empleado,32) || -- <--- CORREGIDO AQUÍ
             RPAD(rec.total_horas,    10) || rec.tareas_asignadas);
     END LOOP;
- 
+
     -- Top N proyectos
     DBMS_OUTPUT.PUT_LINE(' ');
     DBMS_OUTPUT.PUT_LINE('============================================');
@@ -283,7 +283,7 @@ BEGIN
             RPAD(rec.total_tareas,   8) || RPAD(NVL(v_pct,0)||'%',9) ||
             NVL(TO_CHAR(rec.dias_prom_entrega),'N/D'));
     END LOOP;
- 
+
     -- Top N categorías
     DBMS_OUTPUT.PUT_LINE(' ');
     DBMS_OUTPUT.PUT_LINE('============================================');
@@ -299,86 +299,52 @@ BEGIN
             RPAD(v_rank,               4) || RPAD(rec.nombre_categoria,28) ||
             RPAD(rec.total_proyectos,  8) || RPAD(rec.total_tareas,8) || rec.total_horas);
     END LOOP;
- 
+
     COMMIT;
- 
+
 EXCEPTION
     WHEN e_n_invalido THEN
         ROLLBACK;
         DBMS_OUTPUT.PUT_LINE(SQLERRM);
     WHEN NO_DATA_FOUND THEN
-    ROLLBACK;
-
-    DECLARE 
-        v_params  VARCHAR2(500);
-        v_usuario VARCHAR2(100);
-        v_error   VARCHAR2(4000);
-    BEGIN
-        v_usuario := USER;
-        v_error   := 'NO_DATA_FOUND: sin datos para el ranking.';
-
-        v_params := 'N=' || TO_CHAR(p_n);
-
-        INSERT INTO log_errores (
-            id_log,
-            procedimiento,
-            mensaje_error,
-            usuario_oracle,
-            parametros
-        )
-        VALUES (
-            seq_log_errores.NEXTVAL,
-            'SP_TOP_ELEMENTOS',
-            v_error,
-            v_usuario,
-            v_params
-        );
-
-        COMMIT;
-    END;
-
-    DBMS_OUTPUT.PUT_LINE(
-        '[sp_top_elementos] Sin datos. Ver LOG_ERRORES.'
-    );
-    
-WHEN TOO_MANY_ROWS THEN
-    ROLLBACK;
-
-    DECLARE 
-        v_params  VARCHAR2(500);
-        v_usuario VARCHAR2(100);
-        v_error   VARCHAR2(4000);
-    BEGIN
-        v_usuario := USER;
-        v_error   := 'TOO_MANY_ROWS inesperado.';
-
-        v_params := 'N=' || TO_CHAR(p_n);
-
-        INSERT INTO log_errores (
-            id_log,
-            procedimiento,
-            mensaje_error,
-            usuario_oracle,
-            parametros
-        )
-        VALUES (
-            seq_log_errores.NEXTVAL,
-            'SP_TOP_ELEMENTOS',
-            v_error,
-            v_usuario,
-            v_params
-        );
-
-        COMMIT;
-    END;
-
-    DBMS_OUTPUT.PUT_LINE(
-        '[sp_top_elementos] Error: demasiadas filas. Ver LOG_ERRORES.'
-    );
+        ROLLBACK;
+        DECLARE 
+            v_params  VARCHAR2(500);
+            v_usuario VARCHAR2(100);
+            v_error   VARCHAR2(4000);
+        BEGIN
+            v_usuario := USER;
+            v_error   := 'NO_DATA_FOUND: sin datos para el ranking.';
+            v_params := 'N=' || TO_CHAR(p_n);
+            INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
+            VALUES (seq_log_errores.NEXTVAL, 'SP_TOP_ELEMENTOS', v_error, v_usuario, v_params);
+            COMMIT;
+        END;
+        DBMS_OUTPUT.PUT_LINE('[sp_top_elementos] Sin datos. Ver LOG_ERRORES.');
+        
+    WHEN TOO_MANY_ROWS THEN
+        ROLLBACK;
+        DECLARE 
+            v_params  VARCHAR2(500);
+            v_usuario VARCHAR2(100);
+            v_error   VARCHAR2(4000);
+        BEGIN
+            v_usuario := USER;
+            v_error   := 'TOO_MANY_ROWS inesperado.';
+            v_params := 'N=' || TO_CHAR(p_n);
+            INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
+            VALUES (seq_log_errores.NEXTVAL, 'SP_TOP_ELEMENTOS', v_error, v_usuario, v_params);
+            COMMIT;
+        END;
+        DBMS_OUTPUT.PUT_LINE('[sp_top_elementos] Error: demasiadas filas. Ver LOG_ERRORES.');
         RAISE;
 END sp_top_elementos;
 /
- 
+
+
+
+
+
 CREATE OR REPLACE PROCEDURE sp_indicadores_categoria (
     p_fecha_inicio IN DATE,
     p_fecha_fin    IN DATE
@@ -594,13 +560,13 @@ CREATE OR REPLACE PROCEDURE sp_alertas_negocio (
 )
 AS
     v_cnt NUMBER;
- 
+
     CURSOR cur_a1 IS
         SELECT p.id_proyecto, p.nombre_proyecto, c.nombre_categoria
           FROM proyecto p JOIN categoria c ON c.id_categoria = p.id_categoria
          WHERE NOT EXISTS (SELECT 1 FROM tarea t WHERE t.id_proyecto = p.id_proyecto)
          ORDER BY p.nombre_proyecto;
- 
+
     CURSOR cur_a2 IS
         SELECT t.id_tarea, t.titulo_tarea, p.nombre_proyecto,
                t.fecha_entrega,
@@ -608,7 +574,7 @@ AS
           FROM tarea t JOIN proyecto p ON p.id_proyecto = t.id_proyecto
          WHERE t.estado_tarea = 'EN PAUSA'
          ORDER BY t.fecha_entrega NULLS LAST;
- 
+
     CURSOR cur_a3 IS
         SELECT p.nombre_proyecto, COUNT(t.id_tarea) AS total_tareas
           FROM proyecto p JOIN tarea t ON t.id_proyecto = p.id_proyecto
@@ -618,21 +584,22 @@ AS
                WHERE t2.id_proyecto = p.id_proyecto)
          GROUP BY p.id_proyecto, p.nombre_proyecto
          ORDER BY total_tareas DESC;
- 
+
     CURSOR cur_a4 IS
-        SELECT e.id_empleado, e.nombre_empleado,
+        SELECT e.id_empleado, 
+               e.nombre AS nombre_empleado, -- <--- CORREGIDO: Se añade el alias aquí
                NVL(e.correo,'(sin correo)') AS correo
           FROM empleado e
          WHERE NOT EXISTS (SELECT 1 FROM asignacion a WHERE a.id_empleado = e.id_empleado)
-         ORDER BY e.nombre_empleado;
- 
+         ORDER BY e.nombre;
+
     CURSOR cur_a5 IS
         SELECT p.nombre_proyecto, COUNT(r.id_riesgo) AS total_riesgos
           FROM proyecto p JOIN riesgo r ON r.id_proyecto = p.id_proyecto
          WHERE NOT EXISTS (SELECT 1 FROM hito h WHERE h.id_proyecto = p.id_proyecto)
          GROUP BY p.id_proyecto, p.nombre_proyecto
          ORDER BY total_riesgos DESC;
- 
+
     CURSOR cur_a6 IS
         SELECT p.nombre_proyecto,
                TO_CHAR(p.fecha_fin,'DD/MM/YYYY') AS fecha_fin,
@@ -640,7 +607,7 @@ AS
           FROM proyecto p
          WHERE p.fecha_fin BETWEEN SYSDATE AND SYSDATE + p_dias_alerta
          ORDER BY p.fecha_fin;
- 
+
     CURSOR cur_a7 IS
         SELECT p.nombre_proyecto,
                TO_CHAR(p.fecha_fin,'DD/MM/YYYY') AS fecha_fin,
@@ -650,7 +617,7 @@ AS
            AND t.estado_tarea <> 'FINALIZADO'
          GROUP BY p.id_proyecto, p.nombre_proyecto, p.fecha_fin
          ORDER BY p.fecha_fin;
- 
+
     CURSOR cur_a8 IS
         SELECT t.titulo_tarea, p.nombre_proyecto,
                TO_CHAR(t.fecha_entrega,'DD/MM/YYYY') AS fecha_entrega,
@@ -663,7 +630,7 @@ AS
            AND t.estado_tarea <> 'FINALIZADO'
          GROUP BY t.id_tarea, t.titulo_tarea, p.nombre_proyecto, t.fecha_entrega
          ORDER BY dias_retraso DESC;
- 
+
     CURSOR cur_a9 IS
         SELECT h.nombre_hito, p.nombre_proyecto,
                TO_CHAR(h.fecha_estimada,'DD/MM/YYYY') AS fecha_hito,
@@ -672,20 +639,20 @@ AS
           JOIN proyecto p ON p.id_proyecto = h.id_proyecto
          WHERE h.fecha_estimada BETWEEN SYSDATE AND SYSDATE + p_dias_alerta
          ORDER BY h.fecha_estimada;
- 
+
     e_umbral_invalido EXCEPTION;
     PRAGMA EXCEPTION_INIT(e_umbral_invalido, -20003);
 BEGIN
     IF p_dias_alerta IS NULL OR p_dias_alerta < 0 THEN
         RAISE_APPLICATION_ERROR(-20003, 'sp_alertas_negocio: p_dias_alerta debe ser >= 0.');
     END IF;
- 
+
     DBMS_OUTPUT.PUT_LINE('============================================');
     DBMS_OUTPUT.PUT_LINE('  PANEL DE ALERTAS OPERATIVAS');
     DBMS_OUTPUT.PUT_LINE('  Generado : ' || TO_CHAR(SYSDATE,'DD/MM/YYYY HH24:MI'));
     DBMS_OUTPUT.PUT_LINE('  Umbral   : ' || p_dias_alerta || ' días');
     DBMS_OUTPUT.PUT_LINE('============================================');
- 
+
     SELECT COUNT(*) INTO v_cnt FROM proyecto p
      WHERE NOT EXISTS (SELECT 1 FROM tarea t WHERE t.id_proyecto = p.id_proyecto);
     DBMS_OUTPUT.PUT_LINE(' ');
@@ -695,7 +662,7 @@ BEGIN
             DBMS_OUTPUT.PUT_LINE('     ' || RPAD(rec.nombre_proyecto,38) || rec.nombre_categoria);
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(*) INTO v_cnt FROM tarea WHERE estado_tarea = 'EN PAUSA';
     DBMS_OUTPUT.PUT_LINE(' ');
     DBMS_OUTPUT.PUT_LINE('[A2] TAREAS EN PAUSA: ' || v_cnt);
@@ -710,7 +677,7 @@ BEGIN
                         ELSE NVL(TO_CHAR(rec.fecha_entrega,'DD/MM/YYYY'),'-') END);
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(DISTINCT p.id_proyecto) INTO v_cnt
       FROM proyecto p JOIN tarea t ON t.id_proyecto = p.id_proyecto
      WHERE NOT EXISTS (
@@ -725,17 +692,17 @@ BEGIN
                               || rec.total_tareas || ' tarea(s) sin asignar');
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(*) INTO v_cnt FROM empleado e
      WHERE NOT EXISTS (SELECT 1 FROM asignacion a WHERE a.id_empleado = e.id_empleado);
     DBMS_OUTPUT.PUT_LINE(' ');
     DBMS_OUTPUT.PUT_LINE('[A4] EMPLEADOS SIN ASIGNACIONES: ' || v_cnt);
     IF v_cnt > 0 THEN
         FOR rec IN cur_a4 LOOP
-            DBMS_OUTPUT.PUT_LINE('     ' || RPAD(rec.nombre_empleado,32) || rec.correo);
+            DBMS_OUTPUT.PUT_LINE('     ' || RPAD(rec.nombre_empleado,32) || rec.correo); -- <--- Aquí usa nombre_empleado
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(DISTINCT p.id_proyecto) INTO v_cnt
       FROM proyecto p JOIN riesgo r ON r.id_proyecto = p.id_proyecto
      WHERE NOT EXISTS (SELECT 1 FROM hito h WHERE h.id_proyecto = p.id_proyecto);
@@ -747,7 +714,7 @@ BEGIN
                               || rec.total_riesgos || ' riesgo(s)');
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(*) INTO v_cnt FROM proyecto
      WHERE fecha_fin BETWEEN SYSDATE AND SYSDATE + p_dias_alerta;
     DBMS_OUTPUT.PUT_LINE(' ');
@@ -759,7 +726,7 @@ BEGIN
                 || RPAD(rec.nombre_proyecto,38) || RPAD(rec.fecha_fin,14) || rec.dias_rest);
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(DISTINCT p.id_proyecto) INTO v_cnt
       FROM proyecto p JOIN tarea t ON t.id_proyecto = p.id_proyecto
      WHERE p.fecha_fin < SYSDATE AND t.estado_tarea <> 'FINALIZADO';
@@ -772,7 +739,7 @@ BEGIN
                 || RPAD(rec.nombre_proyecto,38) || RPAD(rec.fecha_fin,14) || rec.tareas_pend);
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(*) INTO v_cnt FROM tarea
      WHERE fecha_entrega < SYSDATE AND estado_tarea <> 'FINALIZADO';
     DBMS_OUTPUT.PUT_LINE(' ');
@@ -787,7 +754,7 @@ BEGIN
                 || rec.asignados);
         END LOOP;
     END IF;
- 
+
     SELECT COUNT(*) INTO v_cnt FROM hito
      WHERE fecha_estimada BETWEEN SYSDATE AND SYSDATE + p_dias_alerta;
     DBMS_OUTPUT.PUT_LINE(' ');
@@ -798,24 +765,23 @@ BEGIN
         FOR rec IN cur_a9 LOOP
             DBMS_OUTPUT.PUT_LINE('     '
                 || RPAD(rec.nombre_hito,    30) || RPAD(rec.nombre_proyecto,30)
-                || RPAD(rec.fecha_estimada, 13) || rec.dias_rest);
+                || RPAD(rec.fecha_hito, 13) || rec.dias_rest);
         END LOOP;
     END IF;
- 
+
     DBMS_OUTPUT.PUT_LINE(' ');
     DBMS_OUTPUT.PUT_LINE('============================================');
     DBMS_OUTPUT.PUT_LINE('  FIN DEL PANEL DE ALERTAS');
     DBMS_OUTPUT.PUT_LINE('============================================');
- 
+
     COMMIT;
- 
+
 EXCEPTION
     WHEN e_umbral_invalido THEN
         ROLLBACK;
         DBMS_OUTPUT.PUT_LINE(SQLERRM);
     WHEN NO_DATA_FOUND THEN
         ROLLBACK;
-
         DECLARE 
             v_params  VARCHAR2(500);
             v_usuario VARCHAR2(100);
@@ -823,99 +789,47 @@ EXCEPTION
         BEGIN
             v_usuario := USER;
             v_error   := 'NO_DATA_FOUND inesperado.';
-
             v_params := 'dias_alerta=' || TO_CHAR(p_dias_alerta);
-
-            INSERT INTO log_errores (
-                id_log,
-                procedimiento,
-                mensaje_error,
-                usuario_oracle,
-                parametros
-            )
-            VALUES (
-                seq_log_errores.NEXTVAL,
-                'SP_ALERTAS_NEGOCIO',
-                v_error,
-                v_usuario,
-                v_params
-            );
-
+            INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
+            VALUES (seq_log_errores.NEXTVAL, 'SP_ALERTAS_NEGOCIO', v_error, v_usuario, v_params);
             COMMIT;
         END;
+        DBMS_OUTPUT.PUT_LINE('[sp_alertas_negocio] Sin datos. Ver LOG_ERRORES.');
 
-        DBMS_OUTPUT.PUT_LINE(
-            '[sp_alertas_negocio] Sin datos. Ver LOG_ERRORES.'
-        );
     WHEN TOO_MANY_ROWS THEN
-    ROLLBACK;
+        ROLLBACK;
+        DECLARE 
+            v_params  VARCHAR2(500);
+            v_usuario VARCHAR2(100);
+            v_error   VARCHAR2(4000);
+        BEGIN
+            v_usuario := USER;
+            v_error   := 'TOO_MANY_ROWS inesperado.';
+            v_params  := 'dias_alerta=' || TO_CHAR(p_dias_alerta); -- <--- COMPLETADO AQUÍ (Corte de texto original)
+            INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
+            VALUES (seq_log_errores.NEXTVAL, 'SP_ALERTAS_NEGOCIO', v_error, v_usuario, v_params);
+            COMMIT;
+        END;
+        DBMS_OUTPUT.PUT_LINE('[sp_alertas_negocio] Error: demasiadas filas. Ver LOG_ERRORES.');
+        RAISE;
 
-    DECLARE 
-        v_params  VARCHAR2(500);
-        v_usuario VARCHAR2(100);
-        v_error   VARCHAR2(4000);
-    BEGIN
-        v_usuario := USER;
-        v_error   := 'TOO_MANY_ROWS inesperado.';
-
-        v_params := 'dias_alerta=' || TO_CHAR(p_dias_alerta);
-
-        INSERT INTO log_errores (
-            id_log,
-            procedimiento,
-            mensaje_error,
-            usuario_oracle,
-            parametros
-        )
-        VALUES (
-            seq_log_errores.NEXTVAL,
-            'SP_ALERTAS_NEGOCIO',
-            v_error,
-            v_usuario,
-            v_params
-        );
-
-        COMMIT;
-    END;
-
-    DBMS_OUTPUT.PUT_LINE(
-        '[sp_alertas_negocio] Error: demasiadas filas. Ver LOG_ERRORES.'
-    );
-WHEN OTHERS THEN
-    ROLLBACK;
-
-    DECLARE 
-        v_params  VARCHAR2(500);
-        v_usuario VARCHAR2(100);
-        v_error   VARCHAR2(4000);
-    BEGIN
-        v_usuario := USER;
-        v_error   := SQLERRM;
-
-        v_params := 'dias_alerta=' || TO_CHAR(p_dias_alerta);
-
-        INSERT INTO log_errores (
-            id_log,
-            procedimiento,
-            mensaje_error,
-            usuario_oracle,
-            parametros
-        )
-        VALUES (
-            seq_log_errores.NEXTVAL,
-            'SP_ALERTAS_NEGOCIO',
-            v_error,
-            v_usuario,
-            v_params
-        );
-
-        COMMIT;
-    END;
-
-    DBMS_OUTPUT.PUT_LINE(
-        '[sp_alertas_negocio] Error no controlado. Ver LOG_ERRORES.'
-    );
-
-    RAISE;
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DECLARE 
+            v_params  VARCHAR2(500);
+            v_usuario VARCHAR2(100);
+            v_error   VARCHAR2(4000);
+        BEGIN
+            v_usuario := USER;
+            v_error   := SQLERRM;
+            v_params  := 'dias_alerta=' || TO_CHAR(p_dias_alerta);
+            INSERT INTO log_errores (id_log, procedimiento, mensaje_error, usuario_oracle, parametros)
+            VALUES (seq_log_errores.NEXTVAL, 'SP_ALERTAS_NEGOCIO', v_error, v_usuario, v_params);
+            COMMIT;
+        END;
+        DBMS_OUTPUT.PUT_LINE('[sp_alertas_negocio] Error no controlado. Ver LOG_ERRORES.');
+        RAISE;
 END sp_alertas_negocio;
 /
+
+SHOW ERRORS;
