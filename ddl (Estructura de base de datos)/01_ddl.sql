@@ -90,9 +90,8 @@ CREATE TABLE empleado (
     
     rol VARCHAR2(30)
         CONSTRAINT chk_empleado_rol 
-        CHECK (rol IN ('DESARROLLADOR','LIDER','ANALISTA','TESTER','GERENTE')
+        CHECK (rol IN ('DESARROLLADOR','LIDER','ANALISTA','TESTER','GERENTE'))
 );
-
 
 -- =====================================================
 -- TABLA: TELEFONO
