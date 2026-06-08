@@ -149,7 +149,8 @@ CREATE TABLE tarea (
                 'SIN FECHA',
                 'RETRASADO',
                 'PROXIMO',
-                'EN TIEMPO'
+                'EN TIEMPO',
+                'FINALIZADO'
             )
         )
 );
