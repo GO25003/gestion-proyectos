@@ -4,7 +4,7 @@ Proyecto universitario de base de datos en Oracle para un sistema de gestión de
 
 ---
 
-## Estado del proyecto
+## Estado del proyecto (ignorese esta parte, está sujeta a cambios)
 
 **Avance general estimado: 82%**
 
