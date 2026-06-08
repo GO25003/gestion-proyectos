@@ -2,19 +2,19 @@
 CREATE OR REPLACE VIEW v_reporte_tareas AS
 SELECT
     t.id_tarea,
-    t.nombre_tarea,
+    t.titulo_tarea,
     t.fecha_entrega AS fecha_tarea,
     p.id_proyecto,
     p.nombre_proyecto,
     CASE
-        WHEN t.fecha_tarea IS NULL THEN 'SIN FECHA'
-        WHEN t.fecha_tarea < TRUNC(SYSDATE) THEN 'RETRASADO'
-        WHEN t.fecha_tarea BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + 7 THEN 'PROXIMO'
+        WHEN t.fecha_entrega IS NULL THEN 'SIN FECHA'
+        WHEN t.fecha_entrega < TRUNC(SYSDATE) THEN 'RETRASADO'
+        WHEN t.fecha_entrega BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + 7 THEN 'PROXIMO'
         ELSE 'EN TIEMPO'
-    END AS estado_tarea,
+    END AS estado_control,
     CASE
-        WHEN t.fecha_tarea IS NULL THEN NULL
-        ELSE TRUNC(t.fecha_tarea) - TRUNC(SYSDATE)
+        WHEN t.fecha_entrega IS NULL THEN NULL
+        ELSE TRUNC(t.fecha_entrega) - TRUNC(SYSDATE)
     END AS dias_restantes
 FROM tarea t
 JOIN proyecto p
