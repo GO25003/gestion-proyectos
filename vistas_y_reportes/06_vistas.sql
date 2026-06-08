@@ -1,32 +1,44 @@
--- 1. Vista de Control de Hitos y Retrasos Operativos
-CREATE OR REPLACE VIEW v_reporte_hitos AS
-SELECT 
-    h.id_hito,
+-- 1. Vista de Control de Tareas y Retrasos Operativos
+CREATE OR REPLACE VIEW v_reporte_tareas AS
+SELECT
+    t.id_tarea,
+    t.nombre_tarea,
+    t.fecha_entrega AS fecha_tarea,
+    p.id_proyecto,
     p.nombre_proyecto,
-    h.nombre_hito,
-    h.fecha_estimada,
-    h.estado,
-    CASE 
-        WHEN h.estado = 'PENDIENTE' AND h.fecha_estimada < SYSDATE THEN 'ALERTA: RETRASADO'
+    CASE
+        WHEN t.fecha_tarea IS NULL THEN 'SIN FECHA'
+        WHEN t.fecha_tarea < TRUNC(SYSDATE) THEN 'RETRASADO'
+        WHEN t.fecha_tarea BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + 7 THEN 'PROXIMO'
         ELSE 'EN TIEMPO'
-    END AS semaforo_control
-FROM hito h
-JOIN proyecto p ON h.id_proyecto = p.id_proyecto;
+    END AS estado_tarea,
+    CASE
+        WHEN t.fecha_tarea IS NULL THEN NULL
+        ELSE TRUNC(t.fecha_tarea) - TRUNC(SYSDATE)
+    END AS dias_restantes
+FROM tarea t
+JOIN proyecto p
+    ON p.id_proyecto = t.id_proyecto;
 
 -- 2. Vista de Carga de Trabajo del Personal (Seguridad de Abstracción)
 CREATE OR REPLACE VIEW v_dashboard_empleados AS
 SELECT 
     e.id_empleado,
     e.nombre || ' ' || e.apellido AS nombre_completo,
-    e.cargo,
-    COUNT(a.id_asignacion) AS total_proyectos_asignados
+    e.rol,
+    COUNT(a.id_tarea) AS total_tareas_asignadas
 FROM empleado e
-LEFT JOIN asignacion a ON e.id_empleado = a.id_empleado
-GROUP BY e.id_empleado, e.nombre, e.apellido, e.cargo;
+LEFT JOIN asignacion a 
+    ON e.id_empleado = a.id_empleado
+GROUP BY 
+    e.id_empleado,
+    e.nombre,
+    e.apellido,
+    e.rol;
 
 -- 3. OPTIMIZACIÓN: Vista Materializada para Reporting Gerencial Alto Rendimiento
 -- Nota: Esta vista almacena físicamente el resumen financiero y de avance en disco
--- para que tu API en Go/Astro lea al instante sin penalizar la BD con JOINS repetidos.
+-- para que una API en Go/Astro por ejemplo, pueda leer al instante sin penalizar la BD con JOINS repetidos.
 
 CREATE MATERIALIZED VIEW mv_resumen_gerencial_proyectos
 BUILD IMMEDIATE
