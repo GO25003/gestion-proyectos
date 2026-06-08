@@ -58,7 +58,7 @@ BEGIN
        AND fecha_entrega  < SYSDATE
        AND estado_tarea  <> 'FINALIZADO';
  
-    SELECT NVL(SUM(a.horas), 0), ROUND(NVL(AVG(a.horas), 0), 2)
+    SELECT NVL(SUM(a.horas_estimadas), 0), ROUND(NVL(AVG(a.horas_estimadas), 0), 2)
       INTO v_total_horas, v_promedio_horas
       FROM asignacion a
       JOIN tarea      t ON t.id_tarea = a.id_tarea
@@ -207,7 +207,7 @@ create or replace PROCEDURE sp_top_elementos (
 AS
     CURSOR cur_top_empleados IS
         SELECT e.nombre AS nombre_empleado, -- <--- Aquí tiene alias
-               NVL(SUM(a.horas), 0)       AS total_horas,
+               NVL(SUM(a.horas_estimadas), 0)       AS total_horas,
                COUNT(DISTINCT a.id_tarea)  AS tareas_asignadas
           FROM empleado e
           LEFT JOIN asignacion a ON a.id_empleado = e.id_empleado
@@ -233,7 +233,7 @@ AS
         SELECT c.nombre_categoria,
                COUNT(DISTINCT p.id_proyecto) AS total_proyectos,
                COUNT(t.id_tarea)             AS total_tareas,
-               NVL(SUM(a.horas), 0)          AS total_horas
+               NVL(SUM(a.horas_estimadas), 0)          AS total_horas
           FROM categoria   c
           LEFT JOIN proyecto   p ON p.id_categoria = c.id_categoria
           LEFT JOIN tarea      t ON t.id_proyecto  = p.id_proyecto
@@ -376,7 +376,7 @@ AS
             COUNT(CASE WHEN t.fecha_creacion BETWEEN p_fecha_inicio AND p_fecha_fin
                        THEN t.id_tarea END)                          AS tar_act,
             NVL(SUM(CASE WHEN t.fecha_creacion BETWEEN p_fecha_inicio AND p_fecha_fin
-                         THEN a.horas END), 0)                       AS hrs_act,
+                         THEN a.horas_estimadas END), 0)                       AS hrs_act,
             COUNT(CASE WHEN t.fecha_creacion BETWEEN p_fecha_inicio AND p_fecha_fin
                        AND t.estado_tarea = 'FINALIZADO'
                        THEN t.id_tarea END)                          AS fin_act,
@@ -385,7 +385,7 @@ AS
             COUNT(CASE WHEN t.fecha_creacion BETWEEN v_ant_ini AND v_ant_fin
                        THEN t.id_tarea END)                          AS tar_ant,
             NVL(SUM(CASE WHEN t.fecha_creacion BETWEEN v_ant_ini AND v_ant_fin
-                         THEN a.horas END), 0)                       AS hrs_ant,
+                         THEN a.horas_estimadas END), 0)                       AS hrs_ant,
             COUNT(CASE WHEN t.fecha_creacion BETWEEN v_ant_ini AND v_ant_fin
                        AND t.estado_tarea = 'FINALIZADO'
                        THEN t.id_tarea END)                          AS fin_ant,

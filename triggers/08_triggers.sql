@@ -146,7 +146,7 @@ END trg_auditoria_proyecto;
 -- =====================================================================
  
 create or replace TRIGGER trg_integridad_horas_empleado
-BEFORE INSERT OR UPDATE OF horas ON asignacion
+BEFORE INSERT OR UPDATE OF horas_estimadas ON asignacion
 FOR EACH ROW
 DECLARE
     v_horas_existentes NUMBER;
@@ -161,7 +161,7 @@ DECLARE
         PRAGMA AUTONOMOUS_TRANSACTION;
         v_suma NUMBER;
     BEGIN
-        SELECT NVL(SUM(a.horas), 0)
+        SELECT NVL(SUM(a.horas_estimadas), 0)
           INTO v_suma
           FROM asignacion a
           JOIN tarea t ON t.id_tarea = a.id_tarea
@@ -193,7 +193,7 @@ BEGIN
 
     -- Si la tarea actual está activa, sumamos sus horas al conteo semanal
     IF v_estado_tarea <> 'FINALIZADO' THEN
-        v_horas_total := v_horas_existentes + NVL(:NEW.horas, 0);
+        v_horas_total := v_horas_existentes + NVL(:NEW.horas_estimadas, 0);
     ELSE
         v_horas_total := v_horas_existentes; -- Si está FINALIZADA, estas horas no aportan al límite
     END IF;

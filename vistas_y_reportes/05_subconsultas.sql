@@ -4,7 +4,7 @@ FROM proyecto
 WHERE presupuesto > (SELECT AVG(presupuesto) FROM proyecto);
 
 -- 2. Empleados que no tienen ninguna asignación registrada (Uso de NOT EXISTS)
-SELECT id_empleado, nombre, apellido, cargo
+SELECT id_empleado, nombre, apellido, rol
 FROM empleado e
 WHERE NOT EXISTS (
     SELECT 1 
@@ -12,13 +12,13 @@ WHERE NOT EXISTS (
     WHERE a.id_empleado = e.id_empleado
 );
 
--- 3. Proyectos que tienen al menos una tarea en estado 'RETRASADA' o 'CRÍTICA'
+-- 3. Proyectos que tienen al menos una tarea en estado 'POR INICIAR' o 'EN PAUSA'
 SELECT id_proyecto, nombre_proyecto
 FROM proyecto
 WHERE id_proyecto IN (
     SELECT DISTINCT id_proyecto 
     FROM tarea 
-    WHERE estado = 'RETRASADA'
+    WHERE estado = 'EN PAUSA' OR estado = 'POR INICIAR'
 );
 
 -- 4. Obtener el nombre del proyecto y su porcentaje de tareas completadas (Subconsulta correlacionada en el SELECT)
@@ -30,7 +30,7 @@ FROM proyecto p;
 
 -- 5. Listar los empleados que ganan o tienen un rango asignado superior al promedio de su mismo cargo (Correlacionada)
 -- Nota: Adaptable si manejas tabla de salarios, o rendimiento/horas en asignación
-SELECT id_empleado, nombre, cargo
+SELECT id_empleado, nombre, rol
 FROM empleado e
 WHERE e.id_empleado IN (
     SELECT id_empleado 
