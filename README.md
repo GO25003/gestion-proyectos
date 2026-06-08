@@ -427,10 +427,6 @@ Horas efectivamente trabajadas.
 | Capacidad del empleado | horas_estimadas |
 | Alertas de sobreasignación | horas_estimadas |
 | Planificación de carga laboral | horas_estimadas |
-| Pagos | horas_reales |
-| Horas extras | horas_reales |
-| Bonificaciones | horas_reales |
-| Costo real del proyecto | horas_reales |
 | Comparativo planificado vs ejecutado | horas_estimadas y horas_reales |
 
 ---
