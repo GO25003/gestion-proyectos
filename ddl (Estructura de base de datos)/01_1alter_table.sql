@@ -3,6 +3,7 @@
 -- Ejecutar despues de 01_ddl.sql
 -- =====================================================
 
+
 SET SQLBLANKLINES ON;
 
 -- =====================================================
@@ -101,3 +102,4 @@ CHECK (TRIM(descripcion_riesgo) IS NOT NULL);
 ALTER TABLE hito
 ADD CONSTRAINT chk_hito_nombre_trim
 CHECK (TRIM(nombre_hito) IS NOT NULL);
+     

@@ -15,6 +15,7 @@ DROP TABLE hito CASCADE CONSTRAINTS;
 DROP TABLE empleado CASCADE CONSTRAINTS;
 DROP TABLE proyecto CASCADE CONSTRAINTS;
 DROP TABLE categoria CASCADE CONSTRAINTS;
+DROP TABLE recurso CASCADE CONSTRAINTS;
 
 -- =====================================================
 -- TABLA: CATEGORIA
@@ -308,7 +309,6 @@ CREATE TABLE hito (
         REFERENCES proyecto(id_proyecto)
         ON DELETE CASCADE
 );
-
 
 
 COMMIT;
