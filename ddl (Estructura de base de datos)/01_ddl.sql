@@ -311,5 +311,4 @@ CREATE TABLE hito (
 );
 
 
-
 COMMIT;
