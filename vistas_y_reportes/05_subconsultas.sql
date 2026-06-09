@@ -1,4 +1,4 @@
--- 1. Proyectos cuyo presupuesto es superior al promedio general de todos los proyectos
+ -- 1. Proyectos cuyo presupuesto es superior al promedio general de todos los proyectos
 SELECT id_proyecto, nombre_proyecto, presupuesto
 FROM proyecto
 WHERE presupuesto > (SELECT AVG(presupuesto) FROM proyecto);

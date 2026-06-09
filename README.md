@@ -1,10 +1,10 @@
-# Gestion de Proyectos - Oracle DB
+# Gestion de Proyectos - Oracle DB 
 
 Proyecto universitario de base de datos en Oracle para un sistema de gestion de proyectos. El repositorio modela categorias, proyectos, empleados, telefonos, tareas, recursos, asignaciones, documentos, riesgos e hitos. Tambien incorpora restricciones de integridad, procedimientos PL/SQL, triggers, auditoria, log de errores, seguridad por usuarios y una capa inicial de vistas/reportes.
 
 ## Estado Del Proyecto
 
-**Estado academico: terminado para fines del proyecto de DPB135.**
+**Estado academico: terminado para fines del proyecto de DPB135**
 
 El proyecto ya cuenta con modelo relacional, restricciones, procedimientos almacenados, triggers de auditoria e integridad, seguridad por roles y vistas de reporteria. Para efectos de la entrega academica de DPB135, los componentes principales estan completos y alineados entre si. Las tareas restantes se consideran mejoras o validaciones posteriores, no bloqueantes para la defensa del proyecto.
 

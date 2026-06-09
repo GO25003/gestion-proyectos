@@ -1,6 +1,6 @@
--- =====================================================================
--- ARCHIVO: 07_procedimientos.sql (VERSION CORREGIDA Y DEPURADA)
--- =====================================================================
+--  =====================================================================
+--  ARCHIVO: 07_procedimientos.sql (VERSION CORREGIDA Y DEPURADA)
+--  =====================================================================
 
 CREATE OR REPLACE PROCEDURE sp_resumen_periodo (
     p_fecha_inicio IN DATE,
