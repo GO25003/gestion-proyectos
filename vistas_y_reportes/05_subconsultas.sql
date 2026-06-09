@@ -25,7 +25,7 @@ WHERE id_proyecto IN (
 SELECT 
     p.nombre_proyecto,
     (SELECT COUNT(*) FROM tarea t WHERE t.id_proyecto = p.id_proyecto) AS total_tareas,
-    (SELECT COUNT(*) FROM tarea t WHERE t.id_proyecto = p.id_proyecto AND t.estado = 'COMPLETADO') AS completadas
+    (SELECT COUNT(*) FROM tarea t WHERE t.id_proyecto = p.id_proyecto AND t.estado = 'FINALIZADO') AS completadas
 FROM proyecto p;
 
 -- 5. Listar los empleados que ganan o tienen un rango asignado superior al promedio de su mismo cargo (Correlacionada)

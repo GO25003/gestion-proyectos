@@ -210,7 +210,7 @@ BEGIN
         v_mensaje := 'Asignación rechazada: el empleado ' || v_nombre_empleado
                   || ' superaría el límite de ' || v_limite || ' horas activas. '
                   || 'Horas en otras tareas: ' || v_horas_existentes
-                  || ', horas de esta tarea: ' || :NEW.horas
+                  || ', horas de esta tarea: ' || :NEW.horas_estimadas
                   || ', total proyectado: ' || v_horas_total || '.';
 
         -- Guardamos el intento fallido en el LOG_ERRORES

@@ -49,7 +49,7 @@ SELECT
     p.nombre_proyecto,
     SUM(p.presupuesto) AS presupuesto_asignado,
     COUNT(t.id_tarea) AS volumen_tareas,
-    SUM(CASE WHEN t.estado = 'COMPLETADO' THEN 1 ELSE 0 END) AS tareas_exitosas
+    SUM(CASE WHEN t.estado_tarea = 'FINALIZADO' THEN 1 ELSE 0 END) AS tareas_exitosas
 FROM proyecto p
 LEFT JOIN tarea t ON p.id_proyecto = t.id_proyecto
 GROUP BY p.id_proyecto, p.nombre_proyecto;
