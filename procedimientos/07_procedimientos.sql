@@ -645,7 +645,7 @@ AS
 
     CURSOR cur_a9 IS
         SELECT h.nombre_hito, p.nombre_proyecto,
-               TO_CHAR(h.fecha_hito,'DD/MM/YYYY') AS fecha_del_logro,
+               TO_CHAR(h.fecha_hito,'DD/MM/YYYY') AS fecha_hito,
                ROUND(h.fecha_hito - SYSDATE)       AS dias_rest
           FROM hito     h
           JOIN proyecto p ON p.id_proyecto = h.id_proyecto
