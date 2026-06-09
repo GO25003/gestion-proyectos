@@ -69,6 +69,11 @@ GRANT SELECT ON categoria  TO usr_lectura;
 GRANT SELECT ON documento  TO usr_lectura;
 GRANT SELECT ON riesgo     TO usr_lectura;
 GRANT SELECT ON hito       TO usr_lectura;
+GRANT SELECT ON recurso    TO usr_lectura;
+
+GRANT SELECT ON v_reporte_tareas               TO usr_lectura;
+GRANT SELECT ON v_dashboard_empleados          TO usr_lectura;
+GRANT SELECT ON mv_resumen_gerencial_proyectos TO usr_lectura;
 
 -- Si existen vistas de consulta:
 
@@ -81,9 +86,9 @@ GRANT SELECT ON hito       TO usr_lectura;
 
 -- Acceso a tabla de auditoría / errores
 
-GRANT SELECT, INSERT, UPDATE, DELETE
-ON log_errores
-TO usr_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON log_errores        TO usr_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON auditoria_proyecto TO usr_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON auditoria_log      TO usr_admin;
 
 -- Si existe alguna tabla adicional de auditoría:
 
@@ -99,6 +104,7 @@ GRANT EXECUTE ON sp_resumen_periodo       TO usr_admin;
 GRANT EXECUTE ON sp_top_elementos         TO usr_admin;
 GRANT EXECUTE ON sp_indicadores_categoria TO usr_admin;
 GRANT EXECUTE ON sp_alertas_negocio       TO usr_admin;
+
 
 -- Si existen funciones:
 
@@ -123,6 +129,12 @@ SELECT * FROM proyecto;
 
 SELECT * FROM tarea;
 
+SELECT * FROM nombre_esquema.recurso;
+
+SELECT * FROM nombre_esquema.v_dashboard_empleados;
+
+SELECT * FROM nombre_esquema.v_reporte_tareas;
+
 Debe fallar:
 
 INSERT INTO proyecto
@@ -134,8 +146,9 @@ SET nombre_proyecto = 'TEST';
 DELETE FROM proyecto
 WHERE id_proyecto = 1;
 
-EXEC sp_alertas_negocio(7);
+-- Intentar ejecutar un procedimiento almacenado (debe fallar por falta de privilegios)
 
+EXEC nombre_esquema.sp_alertas_negocio(7);
 ---
 
 PRUEBA 2 - USUARIO ADMINISTRADOR

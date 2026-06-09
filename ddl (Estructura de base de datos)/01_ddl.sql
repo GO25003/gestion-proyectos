@@ -147,10 +147,10 @@ CREATE TABLE tarea (
     CONSTRAINT chk_estado_tarea
         CHECK (
             estado_tarea IN (
-                'SIN FECHA',
-                'RETRASADO',
-                'PROXIMO',
-                'EN TIEMPO',
+                
+                'POR INICIAR',
+                'EN DESARROLLO',
+                'EN PAUSA',
                 'FINALIZADO'
             )
         )
