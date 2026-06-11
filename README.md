@@ -199,7 +199,57 @@ La carpeta `vistas_y_reportes_portal_web/` contiene una estructura inicial para 
 
 Esta capa esta planteada como base para una futura API conectada a Oracle Database.
 
-## Orden Sugerido De Ejecucion
+### Orden Sugerido De Ejecucion
+
+## Creación del superusuario `USR_PROYECTOS`
+
+Este usuario se utiliza como **administrador interno** del proyecto.  
+Con él se pueden crear y gestionar esquemas, tablas, procedimientos, triggers y demás objetos de base de datos.
+
+### Orden Sugerido De Ejecución
+
+## Creación del superusuario `USR_PROYECTOS`
+
+Este usuario se utiliza como **administrador interno** del proyecto.  
+Con él se pueden crear y gestionar esquemas, tablas, procedimientos, triggers y demás objetos de base de datos.  
+Desde este superusuario se recomienda crear el esquema principal del proyecto (`GESTIONPROYECTOSDPB`).
+
+### Ejecución
+
+Conéctate como `SYSTEM` o cualquier usuario con privilegios de DBA en la PDB correspondiente (`XEPDB1`):
+
+```sql
+ALTER SESSION SET CONTAINER=XEPDB1;
+
+CREATE USER usr_proyectos IDENTIFIED BY ClaveProyectos
+DEFAULT TABLESPACE users
+TEMPORARY TABLESPACE temp
+QUOTA UNLIMITED ON users;
+
+-- Privilegios básicos
+GRANT CONNECT, RESOURCE TO usr_proyectos;
+
+-- Privilegios avanzados (equivalentes a SYSTEM)
+GRANT DBA TO usr_proyectos;
+GRANT EXP_FULL_DATABASE TO usr_proyectos;
+GRANT IMP_FULL_DATABASE TO usr_proyectos;
+GRANT SELECT_CATALOG_ROLE TO usr_proyectos;
+GRANT EXECUTE_CATALOG_ROLE TO usr_proyectos;
+```
+
+### Notas
+
+- Cambia `ClaveProyectos` por una contraseña segura.
+- Este usuario tiene permisos de administración, por lo que puede crear otros usuarios/esquemas.
+- El esquema principal del proyecto (ej. `GESTIONPROYECTOSDPB`) puede ser creado posteriormente desde este superusuario.
+
+### Para conectarte
+
+```bash
+sqlplus usr_proyectos/ClaveProyectos@localhost:1521/XEPDB1
+```
+
+### Orden de ejecución
 
 1. Ejecutar `ddl (Estructura de base de datos)/01_ddl.sql`.
 2. Ejecutar `ddl (Estructura de base de datos)/01_1alter_table.sql`.
@@ -208,45 +258,7 @@ Esta capa esta planteada como base para una futura API conectada a Oracle Databa
 5. Ejecutar `vistas_y_reportes/05_subconsultas.sql` cuando existan datos de prueba.
 6. Ejecutar `vistas_y_reportes/06_vistas.sql`.
 7. Ejecutar `seguridad (roles y permisos)/09_seguridad.sql` desde el usuario correspondiente.
-8. Agregar y ejecutar scripts DML cuando esten disponibles.
-
-## Criterio De Estados De Tarea
-
-`estado_tarea` debe representar el flujo operativo de la tarea:
-
-- `POR INICIAR`
-- `EN DESARROLLO`
-- `EN PAUSA`
-- `FINALIZADO`
-
-Los estados calculados por fecha, como `SIN FECHA`, `RETRASADO`, `PROXIMO` y `EN TIEMPO`, deben vivir en vistas como `v_reporte_tareas`, no en la tabla base.
-
-## Criterio De Uso De Horas
-
-El modelo distingue dos columnas:
-
-- `horas_estimadas`: horas planificadas o asignadas.
-- `horas_reales`: horas efectivamente trabajadas.
-
-| Caso | Columna recomendada |
-| --- | --- |
-| Capacidad del empleado | `horas_estimadas` |
-| Alertas de sobreasignacion | `horas_estimadas` |
-| Planificacion de carga laboral | `horas_estimadas` |
-| Pagos | `horas_reales` |
-| Horas extras | `horas_reales` |
-| Bonificaciones | `horas_reales` |
-| Costo real del proyecto | `horas_reales` |
-| Comparativo planificado vs ejecutado | `horas_estimadas` y `horas_reales` |
-
-## Pendientes Posteriores A La Entrega
-
-- Crear scripts formales de insercion en `dml (inserts)/`.
-- Generar evidencias de ejecucion en Oracle SQL Developer o SQL*Plus.
-- Robustecer la reejecucion de scripts con bloques que ignoren objetos inexistentes o ya creados.
-- Crear procedimientos separados para pagos, horas extras y bonificaciones usando `horas_reales`.
-- Documentar evidencias de ejecucion, capturas o resultados de pruebas.
-- Revisar credenciales hardcodeadas antes de usar el proyecto fuera de un entorno academico/local.
+8. Agregar y ejecutar scripts DML cuando estén disponibles.
 
 ## Ultima Actualizacion
 
