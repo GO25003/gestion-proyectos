@@ -2,22 +2,22 @@
 
 Esta carpeta contiene los recursos para cumplir la parte de **Backup y seguridad** de la rubrica:
 
-- generar backups de la base de datos,
-- restaurar el ultimo backup generado,
-- dejar evidencia verificable despues de restaurar.
+* generar backups de la base de datos,
+* restaurar el ultimo backup generado,
+* dejar evidencia verificable despues de restaurar.
 
 La estrategia usada es **Oracle Data Pump**, con `expdp` para exportar y `impdp` para importar. Es una copia logica del esquema: tablas, datos, vistas, procedimientos, triggers, secuencias y demas objetos del usuario propietario.
 
 ## Archivos
 
-| Archivo | Uso |
-| --- | --- |
-| `10_configurar_directorio_backup.sql` | Crea el objeto Oracle `DIRECTORY` llamado `GP_BACKUP_DIR`. |
-| `backup_exportar.bat` | Genera el ultimo backup en Windows. |
-| `backup_restaurar_ultimo.bat` | Restaura el ultimo backup en Windows. |
-| `backup_exportar.sh` | Genera el ultimo backup en Linux/macOS/Docker. |
-| `backup_restaurar_ultimo.sh` | Restaura el ultimo backup en Linux/macOS/Docker. |
-| `11_verificar_backup.sql` | Consultas para comprobar que el backup restaurado contiene los objetos esperados. |
+| Archivo                               | Uso                                                                               |
+| ------------------------------------- | --------------------------------------------------------------------------------- |
+| `10_configurar_directorio_backup.sql` | Crea el objeto Oracle `DIRECTORY` llamado `GP_BACKUP_DIR`.                        |
+| `backup_exportar.bat`                 | Genera el ultimo backup en Windows.                                               |
+| `backup_restaurar_ultimo.bat`         | Restaura el ultimo backup en Windows.                                             |
+| `backup_exportar.sh`                  | Genera el ultimo backup en Linux/macOS/Docker.                                    |
+| `backup_restaurar_ultimo.sh`          | Restaura el ultimo backup en Linux/macOS/Docker.                                  |
+| `11_verificar_backup.sql`             | Consultas para comprobar que el backup restaurado contiene los objetos esperados. |
 
 ## 1. Preparar el directorio de Oracle
 
@@ -27,39 +27,44 @@ Ejecutar como `SYSTEM` o como un usuario con permisos para crear directories:
 @backup_y_restauracion/10_configurar_directorio_backup.sql
 ```
 
-Antes de ejecutarlo, cambiar:
+El script crea el directorio Oracle utilizado por Data Pump:
 
 ```sql
-CREATE OR REPLACE DIRECTORY GP_BACKUP_DIR AS 'C:\oracle_backups\gestion_proyectos';
-GRANT READ, WRITE ON DIRECTORY GP_BACKUP_DIR TO NOMBRE_ESQUEMA;
+CREATE OR REPLACE DIRECTORY GP_BACKUP_DIR AS 'C:\Users\Uber\gestion-proyectos\backup_y_restauracion';
+
+GRANT READ, WRITE ON DIRECTORY GP_BACKUP_DIR TO gestionproyectosdpb;
 ```
 
-`NOMBRE_ESQUEMA` debe ser el usuario propietario real de las tablas del proyecto.
+Antes de ejecutar el script, verificar que la carpeta exista fisicamente:
+
+```text
+C:\Users\Uber\gestion-proyectos\backup_y_restauracion
+```
 
 ## 2. Generar el backup
 
 En Windows:
 
 ```bat
-backup_y_restauracion\backup_exportar.bat usuario/password@localhost:1521/XEPDB1 NOMBRE_ESQUEMA
+backup_y_restauracion\backup_exportar.bat usuario/password@localhost:1521/XEPDB1 gestionproyectosdpb
 ```
 
 En Linux/macOS/Docker:
 
 ```bash
-./backup_y_restauracion/backup_exportar.sh usuario/password@localhost:1521/XEPDB1 NOMBRE_ESQUEMA
+./backup_y_restauracion/backup_exportar.sh usuario/password@localhost:1521/XEPDB1 gestionproyectosdpb
 ```
 
 El archivo generado queda en el directorio Oracle `GP_BACKUP_DIR` con este nombre:
 
 ```text
-gestion_proyectos_NOMBRE_ESQUEMA_ultimo.dmp
+gestion_proyectos_gestionproyectosdpb_ultimo.dmp
 ```
 
 El log queda como:
 
 ```text
-gestion_proyectos_NOMBRE_ESQUEMA_backup.log
+gestion_proyectos_gestionproyectosdpb_backup.log
 ```
 
 ## 3. Restaurar el ultimo backup
@@ -67,13 +72,13 @@ gestion_proyectos_NOMBRE_ESQUEMA_backup.log
 En Windows:
 
 ```bat
-backup_y_restauracion\backup_restaurar_ultimo.bat usuario/password@localhost:1521/XEPDB1 NOMBRE_ESQUEMA
+backup_y_restauracion\backup_restaurar_ultimo.bat usuario/password@localhost:1521/XEPDB1 gestionproyectosdpb
 ```
 
 En Linux/macOS/Docker:
 
 ```bash
-./backup_y_restauracion/backup_restaurar_ultimo.sh usuario/password@localhost:1521/XEPDB1 NOMBRE_ESQUEMA
+./backup_y_restauracion/backup_restaurar_ultimo.sh usuario/password@localhost:1521/XEPDB1 gestionproyectosdpb
 ```
 
 La restauracion usa:
@@ -94,9 +99,9 @@ Despues de restaurar, ejecutar como el usuario propietario:
 
 La evidencia esperada es:
 
-- aparecen las tablas principales del modelo,
-- aparecen vistas y procedimientos con estado `VALID`,
-- los conteos de tablas coinciden con los datos cargados antes del backup.
+* aparecen las tablas principales del modelo,
+* aparecen vistas y procedimientos con estado `VALID`,
+* los conteos de tablas coinciden con los datos cargados antes del backup.
 
 ## Flujo recomendado para evidencia
 
