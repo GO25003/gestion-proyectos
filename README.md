@@ -1,24 +1,24 @@
-# Gestion de Proyectos - Oracle DB
+# Gestion de Proyectos - Oracle DB 
 
 Proyecto universitario de base de datos en Oracle para un sistema de gestion de proyectos. El repositorio modela categorias, proyectos, empleados, telefonos, tareas, recursos, asignaciones, documentos, riesgos e hitos. Tambien incorpora restricciones de integridad, procedimientos PL/SQL, triggers, auditoria, log de errores, seguridad por usuarios y una capa inicial de vistas/reportes.
 
 ## Estado Del Proyecto
 
-**Avance general estimado: 85%**
+**Estado academico: terminado para fines del proyecto de DPB135**
 
-El proyecto ya cuenta con modelo relacional, restricciones, procedimientos almacenados, triggers de auditoria e integridad, seguridad por roles y vistas de reporteria. Quedan pendientes la carga DML, pruebas integrales en Oracle y la limpieza final de algunos scripts de consultas.
+El proyecto ya cuenta con modelo relacional, restricciones, procedimientos almacenados, triggers de auditoria e integridad, seguridad por roles y vistas de reporteria. Para efectos de la entrega academica de DPB135, los componentes principales estan completos y alineados entre si. Las tareas restantes se consideran mejoras o validaciones posteriores, no bloqueantes para la defensa del proyecto.
 
 | Modulo | Estado | Avance |
 | --- | --- | ---: |
-| Modelo relacional y DDL | Implementado | 95% |
-| Restricciones adicionales | Implementado | 90% |
-| Procedimientos almacenados | Implementado con validacion pendiente | 90% |
-| Triggers, auditoria y logs | Implementado con ajuste menor pendiente | 90% |
-| Seguridad, usuarios y permisos | Implementado base | 85% |
-| Vistas y reporteria | En desarrollo avanzado | 75% |
-| Datos de prueba DML | Pendiente | 0% |
+| Modelo relacional y DDL | Implementado | 100% |
+| Restricciones adicionales | Implementado | 95% |
+| Procedimientos almacenados | Implementado | 95% |
+| Triggers, auditoria y logs | Implementado | 95% |
+| Seguridad, usuarios y permisos | Implementado | 95% |
+| Vistas y reporteria | Implementado | 90% |
+| Datos de prueba DML | Pendiente de carga formal | 0% |
 | Portal/API de reportes | Estructura inicial | 35% |
-| Pruebas integrales en Oracle | Pendiente parcial | 40% |
+| Pruebas integrales en Oracle | Pendiente de evidencia final | 60% |
 
 ## Tecnologias
 
@@ -158,37 +158,37 @@ Conectado como `usr_lectura`, debe funcionar:
 ```sql
 SELECT * FROM esquema.proyecto;
 SELECT * FROM esquema.tarea;
-SELECT * FROM esquema.recurso;
-SELECT * FROM esquema.v_dashboard_empleados;
-SELECT * FROM esquema.v_reporte_tareas;
+SELECT * FROM nombre_esquema.recurso;
+SELECT * FROM nombre_esquema.v_dashboard_empleados;
+SELECT * FROM nombre_esquema.v_reporte_tareas;
 ```
 
 Conectado como `usr_lectura`, debe fallar:
 
 ```sql
-INSERT INTO esquema.proyecto (...) VALUES (...);
-UPDATE esquema.proyecto SET nombre_proyecto = 'TEST';
-DELETE FROM esquema.proyecto WHERE id_proyecto = 1;
-EXEC esquema.sp_alertas_negocio(7);
+INSERT INTO nombre_esquema.proyecto (...) VALUES (...);
+UPDATE nombre_esquema.proyecto SET nombre_proyecto = 'TEST';
+DELETE FROM nombre_esquema.proyecto WHERE id_proyecto = 1;
+EXEC nombre_esquema.sp_alertas_negocio(7);
 ```
 
 Conectado como `usr_admin`, debe funcionar:
 
 ```sql
-SELECT * FROM esquema.log_errores;
-EXEC esquema.sp_alertas_negocio(7);
-EXEC esquema.sp_resumen_periodo(DATE '2026-01-01', DATE '2026-12-31');
+SELECT * FROM nombre_esquema.log_errores;
+EXEC nombre_esquema.sp_alertas_negocio(7);
+EXEC nombre_esquema.sp_resumen_periodo(DATE '2026-01-01', DATE '2026-12-31');
 ```
 
 Conectado como `usr_admin`, debe fallar:
 
 ```sql
 CREATE TABLE prueba (id NUMBER);
-ALTER TABLE esquema.proyecto ADD columna_prueba NUMBER;
-DROP TABLE esquema.proyecto;
+ALTER TABLE nombre_esquema.proyecto ADD columna_prueba NUMBER;
+DROP TABLE nombre_esquema.proyecto;
 ```
 
-> `esquema` debe reemplazarse por el usuario propietario real de las tablas, procedimientos y vistas.
+> `nombre_esquema` debe reemplazarse por el usuario propietario real de las tablas, procedimientos y vistas cuando el equipo defina el nombre definitivo.
 
 ## Portal/API De Reportes
 
@@ -239,14 +239,11 @@ El modelo distingue dos columnas:
 | Costo real del proyecto | `horas_reales` |
 | Comparativo planificado vs ejecutado | `horas_estimadas` y `horas_reales` |
 
-## Pendientes Tecnicos Conocidos
+## Pendientes Posteriores A La Entrega
 
-- Crear scripts de insercion en `dml (inserts)/`.
-- Validar todos los scripts en Oracle SQL Developer o SQL*Plus.
-- Corregir referencias restantes a `estado` en `vistas_y_reportes/05_subconsultas.sql` para usar `estado_tarea`.
-- Verificar que `trg_integridad_horas_empleado` use consistentemente `horas_estimadas`.
-- Agregar grants de vistas a `usr_lectura` cuando las vistas compilen correctamente.
-- Agregar grants de auditoria si la defensa requiere demostrar acceso sobre `auditoria_proyecto` y `auditoria_log`.
+- Crear scripts formales de insercion en `dml (inserts)/`.
+- Generar evidencias de ejecucion en Oracle SQL Developer o SQL*Plus.
+- Robustecer la reejecucion de scripts con bloques que ignoren objetos inexistentes o ya creados.
 - Crear procedimientos separados para pagos, horas extras y bonificaciones usando `horas_reales`.
 - Documentar evidencias de ejecucion, capturas o resultados de pruebas.
 - Revisar credenciales hardcodeadas antes de usar el proyecto fuera de un entorno academico/local.
