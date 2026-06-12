@@ -15,7 +15,7 @@
 @C:\Users\Uber\gestion-proyectos\procedimientos\07_procedimientos.sql
 
 -- 4. Datos de prueba (DML)
-@C:\Users\Uber\gestion-proyectos\dml (inserts)\insert_datos.sql
+@C:\Users\Uber\gestion-proyectos\dml (inserts)\02_dml.sql
 
 -- 5. Subconsultas y vistas
 @C:\Users\Uber\gestion-proyectos\vistas_y_reportes\05_subconsultas.sql
