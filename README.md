@@ -255,7 +255,7 @@ sqlplus usr_proyectos/ClaveProyectos@localhost:1521/XEPDB1
 2. Ejecutar `ddl (Estructura de base de datos)/01_1alter_table.sql`.
 3. Ejecutar `triggers/08_triggers.sql`.
 4. Ejecutar `procedimientos/07_procedimientos.sql`.
-5. Ejecutar `dml (inserts)/ para cargar datos de prueba`.
+5. Ejecutar `dml (inserts)02_dml.sql`  para cargar datos de prueba.
 6. Ejecutar `vistas_y_reportes/05_subconsultas.sql`.
 7. Ejecutar `vistas_y_reportes/06_vistas.sql`.
 8. Ejecutar `seguridad (roles y permisos)/09_seguridad.sql desde el usuario correspondiente`.
