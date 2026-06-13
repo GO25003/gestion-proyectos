@@ -53,7 +53,7 @@ CREATE TABLE proyecto (
     
     fecha_fin DATE,
 
-    presupuesto NUMBER(6,2)
+    presupuesto NUMBER(10,2)
         CONSTRAINT chk_presupuesto CHECK (presupuesto >= 0),
 
     estado_proyecto VARCHAR2(20)
