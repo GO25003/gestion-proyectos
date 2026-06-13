@@ -243,6 +243,27 @@ GRANT EXECUTE_CATALOG_ROLE TO usr_proyectos;
 - Este usuario tiene permisos de administración, por lo que puede crear otros usuarios/esquemas.
 - El esquema principal del proyecto (ej. `GESTIONPROYECTOSDPB`) puede ser creado posteriormente desde este superusuario.
 
+### Creación del esquema principal GESTIONPROYECTOSDPB
+Conéctate como USR_PROYECTOS en la PDB XEPDB1:
+
+```sql
+CREATE USER gestionproyectosdpb IDENTIFIED BY ClaveProyectos
+DEFAULT TABLESPACE users
+TEMPORARY TABLESPACE temp
+QUOTA UNLIMITED ON users;
+
+-- Privilegios básicos
+GRANT CONNECT, RESOURCE TO gestionproyectosdpb;
+
+-- Privilegios avanzados
+GRANT DBA TO gestionproyectosdpb;
+GRANT EXP_FULL_DATABASE TO gestionproyectosdpb;
+GRANT IMP_FULL_DATABASE TO gestionproyectosdpb;
+
+-- Privilegios sobre directorio de backups
+GRANT READ, WRITE ON DIRECTORY GP_BACKUP_DIR TO gestionproyectosdpb;
+
+´´´
 ### Para conectarte
 
 ```bash
