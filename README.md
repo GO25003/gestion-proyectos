@@ -255,10 +255,12 @@ sqlplus usr_proyectos/ClaveProyectos@localhost:1521/XEPDB1
 2. Ejecutar `ddl (Estructura de base de datos)/01_1alter_table.sql`.
 3. Ejecutar `triggers/08_triggers.sql`.
 4. Ejecutar `procedimientos/07_procedimientos.sql`.
-5. Ejecutar `vistas_y_reportes/05_subconsultas.sql` cuando existan datos de prueba.
-6. Ejecutar `vistas_y_reportes/06_vistas.sql`.
-7. Ejecutar `seguridad (roles y permisos)/09_seguridad.sql` desde el usuario correspondiente.
-8. Agregar y ejecutar scripts DML cuando estén disponibles.
+5. Ejecutar `dml (inserts)02_dml.sql`  para cargar datos de prueba.
+6. Ejecutar `vistas_y_reportes/05_subconsultas.sql`.
+7. Ejecutar `vistas_y_reportes/06_vistas.sql`.
+8. Ejecutar `seguridad (roles y permisos)/09_seguridad.sql desde el usuario correspondiente`.
+
+En la raíz del repo hallará también un archivo llamado master.sql que ejecuta estos comandos en orden, solo asegurese de modificar la ruta. 
 
 ## Ultima Actualizacion
 
