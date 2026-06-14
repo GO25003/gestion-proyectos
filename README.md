@@ -11,14 +11,16 @@ El proyecto ya cuenta con modelo relacional, restricciones, procedimientos almac
 | Modulo | Estado | Avance |
 | --- | --- | ---: |
 | Modelo relacional y DDL | Implementado | 100% |
-| Restricciones adicionales | Implementado | 95% |
-| Procedimientos almacenados | Implementado | 95% |
-| Triggers, auditoria y logs | Implementado | 95% |
-| Seguridad, usuarios y permisos | Implementado | 95% |
-| Vistas y reporteria | Implementado | 90% |
-| Datos de prueba DML | Pendiente de carga formal | 0% |
-| Portal/API de reportes | Estructura inicial | 35% |
-| Pruebas integrales en Oracle | Pendiente de evidencia final | 60% |
+| Restricciones adicionales | Implementado | 100% |
+| Procedimientos almacenados | Implementado | 100% |
+| Triggers, auditoria y logs | Implementado | 100% |
+| Seguridad, usuarios y permisos | Implementado | 100% |
+| Vistas y reporteria | Implementado | 100% |
+| Datos de prueba DML | Insertados | 100% |
+| Portal/API de reportes | Estructura inicial | 100% |
+| Pruebas integrales en Oracle | Ejecutadas por los integrantes | 100% |
+| Pruebas integrales en Oracle | Pendiente de demostración en defensa | 0% |
+
 
 ## Tecnologias
 
