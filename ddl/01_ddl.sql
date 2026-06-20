@@ -90,8 +90,30 @@ CREATE TABLE empleado (
         CHECK (disponibilidad IN ('DISPONIBLE','OCUPADO','EN_VACACIONES')),
     
     rol VARCHAR2(30)
-        CONSTRAINT chk_empleado_rol 
-        CHECK (rol IN ('DESARROLLADOR','LIDER','ANALISTA','TESTER','GERENTE'))
+    CONSTRAINT chk_empleado_rol
+    CHECK (rol IN (
+        'DESARROLLADOR',
+        'ANALISTA',
+        'GERENTE',
+        'TESTER',
+        'DISEÑADOR',
+        'ADMINISTRADOR',
+        'CONSTRUCTOR',
+        'CONSULTOR',
+        'PROMOTOR',
+        'ARQUITECTO',
+        'INGENIERO_CIVIL',
+        'DIRECTOR_OBRA',
+        'DIRECTOR_EJECUCION',
+        'COORDINADOR_SEGURIDAD',
+        'CONTRATISTA',
+        'CAPATAZ',
+        'ALBAÑIL',
+        'ELECTRICISTA',
+        'PLOMERO',
+        'CARPINTERO',
+        'SOLDADOR'
+    ))
 );
 
 -- =====================================================

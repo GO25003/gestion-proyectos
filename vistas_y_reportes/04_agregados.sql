@@ -25,9 +25,14 @@ SELECT
     e.nombre || ' ' || e.apellido AS empleado,
     COUNT(*) AS total_asignaciones
 FROM empleado e
-JOIN asignacion a ON e.id_empleado = a.id_empleado
+JOIN asignacion a 
+    ON e.id_empleado = a.id_empleado
+JOIN tarea t
+    ON a.id_tarea = t.id_tarea
+WHERE t.estado_tarea IN ('EN DESARROLLO')   -- filtro de tareas activas
 GROUP BY e.id_empleado, e.nombre, e.apellido
 HAVING COUNT(*) > 3;
+
 
 -- 4. Costo total estimado de horas asignadas por proyecto
 -- (Asumiendo que asignacion guarda horas e ingresos/costos estimados)
